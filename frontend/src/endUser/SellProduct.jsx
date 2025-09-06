@@ -555,6 +555,8 @@ const SellProduct = () => {
                     <option value="shoes">Shoes</option>
                     <option value="wristwatch">Wristwatch</option>
                     <option value="clothes">Clothes</option>
+                    <option value="bag">Bag</option>
+                    
                   </select>
                   {errors.productType && (
                     <span className="text-sm text-red-600">

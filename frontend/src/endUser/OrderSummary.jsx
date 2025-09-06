@@ -5,70 +5,77 @@ import { useNavigate, useLocation } from "react-router-dom";
 const OrderSummary = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [userAddress, setUserAddress] = useState(null);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [finalPrice, setFinalPrice] = useState(null);
-  const [deliveryCharge, setDeliveryCharge] = useState(0);
-  const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("token");
   const userid = localStorage.getItem("userid");
 
-  // Get the product object from location state
-  const product = location.state?.product;
+  const [userAddress, setUserAddress] = useState(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  const [products, setProducts] = useState([]);
+  const [productMap, setProductMap] = useState({});
+  const [deliveryCharge, setDeliveryCharge] = useState(0);
+  const [finalPrice, setFinalPrice] = useState(0);
+
+  const isCartCheckout = location.state?.fromCart === true;
+  const singleProduct = location.state?.product;
+  const cartProducts = location.state?.products;
+
+  // Fetch address and calculate pricing
   useEffect(() => {
-    // console.log("Loaded product:", product);
-
-    if (!product) {
-      setError("No product data found.");
-      return;
-    }
-
-    // Calculate final price and delivery charge
-    let price = product.final_price;
-    if (price < 500) {
-      setDeliveryCharge(50);
-      price += 50;
-    } else {
-      setDeliveryCharge(0);
-    }
-    setFinalPrice(price);
-
-    // Fetch user address
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/user/profile/",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await axios.get("http://localhost:3000/user/profile/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const { address } = response.data.user;
-        // console.log("Fetched user address:", address);
         setUserAddress(address);
       } catch (err) {
         setError("Failed to fetch user address");
-        console.error("Error fetching user profile:", err);
       }
     };
 
-    fetchUserProfile();
-  }, [product, token]);
+    if (!singleProduct && !cartProducts) {
+      setError("No product(s) to checkout.");
+      return;
+    }
 
-  // Helper to generate a random order id
+    let items = isCartCheckout ? cartProducts : [singleProduct];
+
+    // Calculate product map and total
+    const tempMap = {};
+    let subtotal = 0;
+
+    items.forEach((item) => {
+      tempMap[item.listing_id] = item.final_price;
+      subtotal += item.final_price;
+    });
+
+    const charge = subtotal < 500 ? 50 : 0;
+
+    setProducts(items);
+    setProductMap(tempMap);
+    setDeliveryCharge(charge);
+    setFinalPrice(subtotal + charge);
+
+    fetchUserProfile();
+  }, [singleProduct, cartProducts, isCartCheckout, token]);
+
   const generateOrderId = () => {
     const prefix = "ORD";
-    const randomNum = Math.floor(1000000000 + Math.random() * 9000000000); // 10-digit number
+    const randomNum = Math.floor(1000000000 + Math.random() * 9000000000);
     return prefix + randomNum;
   };
 
   const handleCheckout = async () => {
-    if (!product || !product.listing_id || !product.final_price) {
-      setError("Invalid product data. Cannot place order.");
-      console.error("Product data is invalid:", product);
+    if (!products || products.length === 0) {
+      setError("No product data. Cannot place order.");
       return;
     }
 
     setLoading(true);
+    setError("");
 
     try {
       const orderId = generateOrderId();
@@ -77,9 +84,7 @@ const OrderSummary = () => {
       const orderData = {
         order_id: orderId,
         customer_id: userid,
-        products: {
-          [product.listing_id]: product.final_price,
-        },
+        products: productMap,
         other_charges: deliveryCharge,
         total_price: finalPrice,
         status: "ordered",
@@ -88,14 +93,18 @@ const OrderSummary = () => {
         delivered_at: null,
       };
 
-      // console.log("Sending order:", orderData);
+      console.log("Sending order:", orderData);
 
       const response = await axios.post("http://localhost:3000/customer_orders", orderData);
 
       console.log("Order placed successfully:", response.data);
       setSuccess(true);
 
-      // Redirect to /home after 5 seconds
+      // Clear cart if from cart
+      if (isCartCheckout) {
+        sessionStorage.removeItem("cart");
+      }
+
       setTimeout(() => {
         navigate("/home");
       }, 5000);
@@ -107,10 +116,18 @@ const OrderSummary = () => {
     }
   };
 
-  if (!product) {
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600 text-lg">
+        {error}
+      </div>
+    );
+  }
+
+  if (!products || products.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Product not found
+        <p className="text-gray-600 text-lg">No products to checkout.</p>
       </div>
     );
   }
@@ -152,13 +169,13 @@ const OrderSummary = () => {
 
             {/* Product Details */}
             <div className="mb-4">
-              <h3 className="text-xl font-semibold">Product Details:</h3>
-              <div className="flex justify-between">
-                <span>
-                  {product?.description || product?.name || "Product Name"}
-                </span>
-                <span>₹{product?.final_price?.toFixed(2) || 0}</span>
-              </div>
+              <h3 className="text-xl font-semibold mb-2">Product(s):</h3>
+              {products.map((p) => (
+                <div key={p.listing_id} className="flex justify-between text-gray-800 py-1 border-b">
+                  <span>{p.description || p.product_type || "Product"}</span>
+                  <span>₹{p.final_price?.toFixed(2)}</span>
+                </div>
+              ))}
             </div>
 
             {/* Charges */}
@@ -180,12 +197,36 @@ const OrderSummary = () => {
             <div className="mt-6 flex justify-center">
               <button
                 onClick={handleCheckout}
-                disabled={loading}
-                className={`px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-green-700 transition ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
+                disabled={loading || success}
+                className={`px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-md transition duration-300 flex items-center justify-center gap-2 ${
+                  loading || success ? "opacity-50 cursor-not-allowed" : "hover:bg-green-700"
                 }`}
               >
-                {loading ? "Processing..." : "Pay & Checkout"}
+                {loading ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8z"
+                      ></path>
+                    </svg>
+                    Placing Order...
+                  </>
+                ) : success ? "Order Placed" : "Checkout"}
               </button>
             </div>
           </>

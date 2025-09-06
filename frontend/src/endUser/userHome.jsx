@@ -1,21 +1,46 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserIcon, ShoppingBagIcon, TagIcon } from '@heroicons/react/24/outline';
 import BuyProduct from './BuyProduct';
 import SellProduct from './SellProduct';
 import Profile from './Profile';
-import CustomerOrderHistory from './CustomerOrderHistory'; // Import the new component
+import CustomerOrderHistory from './CustomerOrderHistory';
 
 const UserHome = () => {
   const navigate = useNavigate();
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isBuyActive, setIsBuyActive] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
-  const [showOrderHistory, setShowOrderHistory] = useState(false); // State to control order history view
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
-  const toggleDashboard = () => {
-    setIsDashboardOpen(!isDashboardOpen);
+  // Security: check on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login', { replace: true });
+    }
+    updateCartCount();
+  }, [navigate]);
+
+  // Update cart count whenever the component mounts or cart changes
+  const updateCartCount = () => {
+    const cartData = sessionStorage.getItem('cart');
+    if (cartData) {
+      try {
+        const parsed = JSON.parse(cartData);
+        setCartCount(parsed.length);
+      } catch (err) {
+        console.error('Error reading cart from sessionStorage:', err);
+        sessionStorage.removeItem('cart');
+        setCartCount(0);
+      }
+    } else {
+      setCartCount(0);
+    }
   };
+
+  const toggleDashboard = () => setIsDashboardOpen(!isDashboardOpen);
 
   const handleBuyClick = () => {
     setIsBuyActive(true);
@@ -41,7 +66,11 @@ const UserHome = () => {
   const handleHistoryClick = () => {
     setShowOrderHistory(true);
     setShowProfile(false);
-    setIsDashboardOpen(false); // Close the dashboard when clicking History
+    setIsDashboardOpen(false);
+  };
+
+  const handleCartClick = () => {
+    navigate('/cart');
   };
 
   return (
@@ -55,7 +84,7 @@ const UserHome = () => {
               <h1 className="text-2xl font-bold text-gray-900 font-['Montserrat']">reStyle</h1>
             </div>
 
-            {/* Buy/Sell Buttons */}
+            {/* Buy/Sell Buttons & Cart Icon */}
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleBuyClick}
@@ -80,7 +109,24 @@ const UserHome = () => {
                 Sell
               </button>
 
-              {/* Human Avatar Icon */}
+              {/* Cart Icon with Count */}
+              <button
+                onClick={handleCartClick}
+                className="relative p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                title="View Cart"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m5-9v9m4-9v9m4-9l2 9" />
+                </svg>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+
+              {/* User Dashboard Icon */}
               <button
                 onClick={toggleDashboard}
                 className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
@@ -119,7 +165,6 @@ const UserHome = () => {
               <p className="text-sm text-gray-600">Manage your account details</p>
             </button>
 
-            {/* Replaced Settings with History */}
             <button
               onClick={handleHistoryClick}
               className="w-full p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
@@ -144,7 +189,7 @@ const UserHome = () => {
         {showProfile ? (
           <Profile />
         ) : showOrderHistory ? (
-          <CustomerOrderHistory /> // Show Order History
+          <CustomerOrderHistory />
         ) : (
           <>
             <div className={`transition-opacity duration-500 ${isBuyActive ? 'opacity-100' : 'opacity-0'} ${isBuyActive ? 'block' : 'hidden'}`}>

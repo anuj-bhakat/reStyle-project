@@ -3,41 +3,42 @@ import SellerOrderHistory from "./SellerOrderHistory";
 import CustomerOrders from "./CustomerOrders";
 
 export default function CustomerOrderHistory() {
-  const [activeTab, setActiveTab] = useState("sold"); // 'sold' or 'bought'
+  const [activeTab, setActiveTab] = useState("sold");
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Navbar */}
-      <nav className="flex items-center justify-between bg-white shadow-md px-6 py-4">
-        {/* Left: Order History text */}
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 select-none">
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      {/* Header */}
+      <nav className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Title */}
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 tracking-tight">
             Order History
           </h1>
+
+          {/* Toggle Buttons */}
+          <div className="flex space-x-2 sm:space-x-4">
+            <ToggleButton
+              id="sold"
+              label="Sold"
+              active={activeTab === "sold"}
+              onClick={() => setActiveTab("sold")}
+            />
+            <ToggleButton
+              id="bought"
+              label="Bought"
+              active={activeTab === "bought"}
+              onClick={() => setActiveTab("bought")}
+            />
+          </div>
         </div>
-        {/* Center: Toggle buttons */}
-        <div className="flex-1 flex justify-center space-x-3">
-          <ToggleButton
-            id="sold"
-            active={activeTab === "sold"}
-            onClick={() => setActiveTab("sold")}
-            label="Sold"
-          />
-          <ToggleButton
-            id="bought"
-            active={activeTab === "bought"}
-            onClick={() => setActiveTab("bought")}
-            label="Bought"
-          />
-        </div>
-        {/* Right: Spacer */}
-        <div className="flex-1" />
       </nav>
 
-      {/* Content Area */}
-      <main className="flex-grow p-6">
-        {activeTab === "sold" && <SellerOrderHistory />}
-        {activeTab === "bought" && <CustomerOrders />}
+      {/* Main Content */}
+      <main className="flex-grow max-w-7xl mx-auto w-full px-6 py-10">
+        <div className="bg-white shadow-sm rounded-xl p-6">
+          {activeTab === "sold" && <SellerOrderHistory />}
+          {activeTab === "bought" && <CustomerOrders />}
+        </div>
       </main>
     </div>
   );
@@ -50,12 +51,13 @@ function ToggleButton({ active, onClick, label, id }) {
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`px-5 py-2 rounded-full font-semibold text-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-        active
-          ? "bg-indigo-600 text-white shadow-md"
-          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-      }`}
       aria-label={`${label} orders tab`}
+      className={`px-5 py-2.5 rounded-lg font-medium text-sm sm:text-base border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 
+        ${
+          active
+            ? "bg-indigo-600 text-white border-indigo-600 shadow-md focus:ring-indigo-500"
+            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 focus:ring-indigo-300"
+        }`}
     >
       {label}
     </button>

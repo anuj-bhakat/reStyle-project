@@ -13,6 +13,8 @@ const ProductDetail = () => {
   const location = useLocation();
   const listingId = location.state?.listingId;
 
+  // ---------- CART STATE ----------
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     if (!listingId) {
@@ -21,13 +23,13 @@ const ProductDetail = () => {
       return;
     }
     fetchProductDetails();
+    loadCartFromSession();
   }, [listingId]);
 
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`http://localhost:3000/products/${listingId}`);
-      
       if (response.status === 200) {
         setProduct(response.data);
         setError('');
@@ -55,30 +57,46 @@ const ProductDetail = () => {
     }).format(price);
   };
 
+  // ---------- CART HANDLERS ----------
+  const loadCartFromSession = () => {
+    const data = sessionStorage.getItem('cart');
+    if (data) {
+      setCart(JSON.parse(data));
+    }
+  };
 
-const handleBuyNow = () => {
-  if (!selectedSize && product.checklist_json?.size) {
-    alert('Please select a size');
-    return;
-  }
+  const updateCartInSession = (updatedCart) => {
+    sessionStorage.setItem('cart', JSON.stringify(updatedCart));
+    setCart(updatedCart);
+  };
 
-  // Navigate to order summary and pass product + selectedSize
-  navigate("/order-summary", {
-    state: {
-      product,
-      selectedSize,
-    },
-  });
-};
-
+  const isInCart = () => {
+    return cart.includes(product?.listing_id);
+  };
 
   const handleAddToCart = () => {
     if (!selectedSize && product.checklist_json?.size) {
       alert('Please select a size');
       return;
     }
-    // Handle add to cart logic
-    console.log('Adding to cart:', product.listing_id, 'Size:', selectedSize);
+
+    const updatedCart = [...cart, product.listing_id];
+    updateCartInSession(updatedCart);
+  };
+
+  const handleRemoveFromCart = () => {
+    const updatedCart = cart.filter(id => id !== product.listing_id);
+    updateCartInSession(updatedCart);
+  };
+
+  const handleBuyNow = () => {
+    navigate("/order-summary", {
+      state: {
+        product,
+        selectedSize,
+        fromCart: false,
+      },
+    });
   };
 
   if (loading) {
@@ -114,17 +132,17 @@ const handleBuyNow = () => {
       <div className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-                         <button
-               onClick={() => navigate('/home')}
-               className="flex items-center text-gray-600 hover:text-gray-900"
-             >
+            <button
+              onClick={() => navigate('/home')}
+              className="flex items-center text-gray-600 hover:text-gray-900"
+            >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Back to Products
             </button>
             <h1 className="text-xl font-semibold text-gray-900">reStyle Store</h1>
-            <div className="w-20"></div> {/* Spacer for centering */}
+            <div className="w-20"></div>
           </div>
         </div>
       </div>
@@ -133,8 +151,7 @@ const handleBuyNow = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-4">
-                         {/* Main Image */}
-             <div className="aspect-[5/4] max-w-md mx-auto bg-white rounded-lg overflow-hidden shadow-sm">
+            <div className="aspect-[5/4] max-w-md mx-auto bg-white rounded-lg overflow-hidden shadow-sm">
               {product.product_images && product.product_images.length > 0 ? (
                 <img
                   src={product.product_images[selectedImageIndex]?.url}
@@ -160,13 +177,13 @@ const handleBuyNow = () => {
             {product.product_images && product.product_images.length > 1 && (
               <div className="flex space-x-2 overflow-x-auto justify-center">
                 {product.product_images.map((image, index) => (
-                                     <button
-                     key={image.image_id}
-                     onClick={() => setSelectedImageIndex(index)}
-                     className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${
-                       selectedImageIndex === index ? 'border-blue-500' : 'border-gray-200'
-                     }`}
-                   >
+                  <button
+                    key={image.image_id}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${
+                      selectedImageIndex === index ? 'border-blue-500' : 'border-gray-200'
+                    }`}
+                  >
                     <img
                       src={image.url}
                       alt={`Product ${index + 1}`}
@@ -216,7 +233,6 @@ const handleBuyNow = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Select Size</span>
-                  {/* <button className="text-sm text-blue-600 hover:text-blue-700">Size Guide</button> */}
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   <button
@@ -244,8 +260,6 @@ const handleBuyNow = () => {
               </div>
             )}
 
-
-
             {/* Action Buttons */}
             <div className="space-y-3 pt-4">
               <button
@@ -254,12 +268,22 @@ const handleBuyNow = () => {
               >
                 Buy Now
               </button>
-              <button
-                onClick={handleAddToCart}
-                className="w-full border border-blue-600 text-blue-600 py-3 px-6 rounded-md font-medium hover:bg-blue-50 transition-colors"
-              >
-                Add to Cart
-              </button>
+
+              {isInCart() ? (
+                <button
+                  onClick={handleRemoveFromCart}
+                  className="w-full border border-red-600 text-red-600 py-3 px-6 rounded-md font-medium hover:bg-red-50 transition-colors"
+                >
+                  − Remove from Cart
+                </button>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full border border-blue-600 text-blue-600 py-3 px-6 rounded-md font-medium hover:bg-blue-50 transition-colors"
+                >
+                  + Add to Cart
+                </button>
+              )}
             </div>
 
             {/* Product Info */}
