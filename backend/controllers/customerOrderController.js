@@ -4,6 +4,8 @@ import {
   fetchOrderById,
   fetchOrdersByCustomerId,
   createCustomerOrderAndMarkSold,
+  fetchOrdersByStatus,
+  fetchOrdersByDeliveryAgentId,
 } from '../services/customerOrderService.js';
 
 // POST /customer_orders
@@ -68,6 +70,39 @@ export const getOrdersByCustomerController = async (req, res) => {
     const { customer_id } = req.params;
     if (!customer_id) return res.status(400).json({ error: 'customer_id is required' });
     const orders = await fetchOrdersByCustomerId(customer_id);
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+export const getOrdersByStatusController = async (req, res) => {
+  try {
+    const { status } = req.params;
+    if (!status) {
+      return res.status(400).json({ error: 'status parameter is required' });
+    }
+
+    const orders = await fetchOrdersByStatus(status);
+    res.json(orders);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
+
+
+export const getOrdersByDeliveryAgentController = async (req, res) => {
+  try {
+    const { deliveryagent_id } = req.params;
+    if (!deliveryagent_id) {
+      return res.status(400).json({ error: 'deliveryagent_id parameter is required' });
+    }
+
+    const orders = await fetchOrdersByDeliveryAgentId(deliveryagent_id);
     res.json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });

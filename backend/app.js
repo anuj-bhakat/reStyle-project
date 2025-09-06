@@ -5,6 +5,9 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import deliveryAgentRoutes from './routes/deliveryAgentRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import managerRoutes from './routes/managerRoutes.js';
+import pickupRequestRoutes from './routes/pickupRequestRoutes.js';
 import customerOrderRoutes from './routes/customerOrderRoutes.js';
 
 
@@ -23,8 +26,12 @@ app.use('/user', userRoutes);
 app.use('/delivery-agent', deliveryAgentRoutes);
 app.use('/products', productRoutes);
 
-app.use('/customer_orders', customerOrderRoutes);
+app.use('/admin', adminRoutes);
+app.use('/managers', managerRoutes);
 
+app.use('/pickup_requests', pickupRequestRoutes);
+
+app.use('/customer_orders', customerOrderRoutes);
 
 
 app.listen(port, () => {

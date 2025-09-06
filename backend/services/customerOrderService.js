@@ -86,3 +86,30 @@ export const createCustomerOrderAndMarkSold = async (orderData) => {
 
   return newOrder;
 };
+
+
+export const fetchOrdersByStatus = async (status) => {
+  const allowedStatuses = ['ordered', 'delivering', 'delivered', 'cancelled'];
+  if (!allowedStatuses.includes(status)) {
+    throw new Error('Invalid status value');
+  }
+
+  const { data, error } = await supabase
+    .from('customer_orders')
+    .select('*')
+    .eq('status', status);
+
+  if (error) throw error;
+  return data;
+};
+
+
+export const fetchOrdersByDeliveryAgentId = async (deliveryagent_id) => {
+  const { data, error } = await supabase
+    .from('customer_orders')
+    .select('*')
+    .eq('deliveryagent_id', deliveryagent_id);
+
+  if (error) throw error;
+  return data;
+};

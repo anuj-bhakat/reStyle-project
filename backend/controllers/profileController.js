@@ -29,8 +29,6 @@ export const updateAddressController = async (req, res) => {
   try {
     const userId = req.params.id;
     const addressData = req.body;
-    console.log(addressData);
-
     const result = await updateAddress(userId, addressData);
 
     res.status(200).json(result);
