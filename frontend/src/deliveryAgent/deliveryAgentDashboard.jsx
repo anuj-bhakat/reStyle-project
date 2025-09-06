@@ -10,15 +10,12 @@ const DeliveryAgentDashboard = () => {
   const [activeSection, setActiveSection] = useState("pickup");
   const [basePrice, setBasePrice] = useState(null);
   const [productDetailsMap, setProductDetailsMap] = useState({});
-
   const navigate = useNavigate();
-
   const token = localStorage.getItem("agentToken");
   const agentId = localStorage.getItem("agent_id");
 
   useEffect(() => {
     if (!token) {
-      // If no token, redirect to login
       navigate("/agent-login", { replace: true });
       return;
     }
@@ -27,13 +24,11 @@ const DeliveryAgentDashboard = () => {
 
   const fetchPickupRequests = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:3000/pickup_requests/get/${agentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.get(`http://localhost:3000/pickup_requests/get/${agentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const requests = res.data || [];
       setRequests(requests);
-
       const productFetches = await Promise.all(
         requests.map((req) =>
           axios
@@ -44,14 +39,12 @@ const DeliveryAgentDashboard = () => {
             .catch(() => null)
         )
       );
-
       const productMap = {};
       productFetches.forEach((entry) => {
         if (entry) {
           productMap[entry.listing_id] = entry.data;
         }
       });
-
       setProductDetailsMap(productMap);
     } catch (err) {
       setError("Failed to fetch pickup requests.");
@@ -78,13 +71,11 @@ const DeliveryAgentDashboard = () => {
         { status: "rejected" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       await axios.put(
         `http://localhost:3000/pickup_requests/${pickup_request_id}`,
         { conditions_json: conditions, status: "completed" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setRequests((prev) => prev.filter((r) => r.pickup_request_id !== pickup_request_id));
       setSelected(null);
     } catch (err) {
@@ -99,20 +90,16 @@ const DeliveryAgentDashboard = () => {
         { status: "picked_up" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       await axios.put(
         `http://localhost:3000/pickup_requests/${pickup_request_id}`,
         { conditions_json: conditions, status: "completed" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       const basePriceResponse = await axios.get(
         `http://localhost:3000/products/base-price/${pickup_request_id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setBasePrice(basePriceResponse.data.base_price);
-
       setRequests((prev) =>
         prev.map((r) =>
           r.pickup_request_id === pickup_request_id ? { ...r, status: "completed" } : r
@@ -125,7 +112,6 @@ const DeliveryAgentDashboard = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-blue-50">
-      {/* HEADER */}
       <header className="w-full bg-white shadow sticky top-0 z-50 border-b">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex gap-4">
@@ -165,16 +151,13 @@ const DeliveryAgentDashboard = () => {
         </div>
       </header>
 
-      {/* BODY */}
       <main className="w-full max-w-7xl px-6 py-8">
         {error && <div className="text-red-600 text-center mb-6">{error}</div>}
-
         {!selected ? (
           <div className="w-full">
             <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center">
               {activeSection === "pickup" ? "Pickup Requests" : "Pickup History"}
             </h2>
-
             {filteredRequests.length === 0 ? (
               <div className="text-gray-600 text-center">
                 No {activeSection === "pickup" ? "pickup requests" : "history"} found.
@@ -187,8 +170,12 @@ const DeliveryAgentDashboard = () => {
                   return (
                     <div
                       key={req.pickup_request_id}
-                      className="bg-white rounded-xl shadow border p-4 max-w-xs min-w-[260px] cursor-pointer hover:shadow-lg transition relative"
                       onClick={() => setSelected(req)}
+                      className={`bg-white rounded-xl shadow border p-4 cursor-pointer hover:shadow-lg transition relative ${
+                        activeSection === "history"
+                          ? "max-w-[250px] min-w-[200px]"
+                          : "max-w-xs min-w-[260px]"
+                      }`}
                     >
                       <span className="absolute top-3 left-3 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">
                         {req.status}
@@ -197,12 +184,16 @@ const DeliveryAgentDashboard = () => {
                         <img
                           src={primaryImage}
                           alt="Product"
-                          className="rounded-md shadow mx-auto mb-4 w-3/4"
+                          className={`rounded-md shadow mx-auto mb-4 ${
+                            activeSection === "history" ? "w-1/2" : "w-3/4"
+                          }`}
                         />
                       )}
                       <div className="text-center">
                         <div className="font-bold text-lg">{product?.brand || "Brand Unknown"}</div>
-                        <div className="text-gray-600 text-sm capitalize">{product?.product_type || "Unknown Type"}</div>
+                        <div className="text-gray-600 text-sm capitalize">
+                          {product?.product_type || "Unknown Type"}
+                        </div>
                         <div className="text-xs text-gray-500 mt-2">
                           <strong>Created:</strong> {new Date(req.created_at).toLocaleString()}
                         </div>
