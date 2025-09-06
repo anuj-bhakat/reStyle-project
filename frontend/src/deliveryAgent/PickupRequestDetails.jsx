@@ -10,11 +10,12 @@ const PickupRequestDetails = ({
 }) => {
   const [conditions, setConditions] = useState(request.conditions_json || {});
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [localBasePrice, setLocalBasePrice] = useState(basePrice); 
+  const [localBasePrice, setLocalBasePrice] = useState(basePrice);
 
-  // --- Back Button ---
+  const isCompleted = request.status === "completed";
+
   const handleBack = () => {
-    onBack(); // ✅ Don't reset base price; keeps UI stable
+    onBack();
   };
 
   const handleSubmit = () => {
@@ -23,7 +24,6 @@ const PickupRequestDetails = ({
     }
   };
 
-  // --- Handle True/False Selections ---
   const handleConditionSet = (key, boolValue) => {
     setConditions((prev) => ({
       ...prev,
@@ -37,18 +37,67 @@ const PickupRequestDetails = ({
   const areAllConditionsFalse = () =>
     Object.values(conditions).every((val) => val === false);
 
-  // --- Date Formatting ---
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
     return new Date(dateStr).toLocaleString();
   };
 
-  // --- Keep Base Price In Sync ---
   useEffect(() => {
     if (basePrice !== null) {
-      setLocalBasePrice(basePrice); // ✅ No null resets
+      setLocalBasePrice(basePrice);
     }
   }, [basePrice]);
+
+  // ✅ NEW: Render checklist item conditionally
+  const renderChecklistItem = (key, value) => {
+    if (isCompleted) {
+      return (
+        <li key={key} className="flex items-center gap-2">
+          <span className="text-lg">
+            {value ? (
+              <span className="text-green-600">✅</span>
+            ) : (
+              <span className="text-gray-400"> ❌</span>
+            )}
+          </span>
+          <span
+            className={`capitalize font-medium ${value ? "text-green-700" : "text-red-600"
+              }`}
+          >
+            {key.replace(/_/g, " ")}
+          </span>
+        </li>
+      );
+    } else {
+      return (
+        <li key={key} className="flex items-center justify-between">
+          <span className="capitalize font-medium text-gray-800">
+            {key.replace(/_/g, " ")}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleConditionSet(key, true)}
+              className={`px-4 py-1 rounded ${value === true
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+                } hover:bg-green-700 transition`}
+            >
+              True
+            </button>
+            <button
+              onClick={() => handleConditionSet(key, false)}
+              className={`px-4 py-1 rounded ${value === false
+                  ? "bg-red-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+                } hover:bg-red-700 transition`}
+            >
+              False
+            </button>
+          </div>
+        </li>
+      );
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -72,11 +121,10 @@ const PickupRequestDetails = ({
                 <button
                   key={image.image_id}
                   onClick={() => setSelectedImageIndex(index)}
-                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${
-                    selectedImageIndex === index
+                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${selectedImageIndex === index
                       ? "border-blue-500"
                       : "border-gray-200"
-                  }`}
+                    }`}
                 >
                   <img
                     src={image.url}
@@ -127,74 +175,52 @@ const PickupRequestDetails = ({
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Condition Checklist
             </h2>
-            <ul className="space-y-4">
-              {Object.entries(conditions).map(([key, value]) => (
-                <li key={key} className="flex items-center justify-between">
-                  <span className="capitalize font-medium text-gray-800">
-                    {key.replace(/_/g, " ")}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleConditionSet(key, true)}
-                      className={`px-4 py-1 rounded ${
-                        value === true
-                          ? "bg-green-600 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      } hover:bg-green-700 transition`}
-                    >
-                      True
-                    </button>
-                    <button
-                      onClick={() => handleConditionSet(key, false)}
-                      className={`px-4 py-1 rounded ${
-                        value === false
-                          ? "bg-red-600 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      } hover:bg-red-700 transition`}
-                    >
-                      False
-                    </button>
-                  </div>
-                </li>
-              ))}
+            <ul className={isCompleted ? "space-y-3 pl-1" : "space-y-4"}>
+              {Object.entries(conditions).map(([key, value]) =>
+                renderChecklistItem(key, value)
+              )}
             </ul>
           </div>
 
           {/* Pricing and Actions */}
-          <div className="bg-white rounded-lg shadow-sm p-6 flex flex-col">
-            {/* ✅ Always show Base Price above buttons */}
-            <div className="text-lg font-semibold text-blue-700 mb-4">
-              Base Price: ${localBasePrice ?? "N/A"}
+          {!isCompleted && (
+            <div className="bg-white rounded-lg shadow-sm p-6 flex flex-col">
+              <div className="text-lg font-semibold text-blue-700 mb-4">
+                Base Price: ₹{localBasePrice ?? "N/A"}
+              </div>
+              <div className="flex gap-4 flex-wrap justify-end">
+                <button
+                  onClick={() =>
+                    onReject(
+                      request.pickup_request_id,
+                      request.listing_id,
+                      conditions
+                    )
+                  }
+                  disabled={!areAllConditionsFalse()}
+                  className="bg-red-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-red-700 transition disabled:cursor-not-allowed disabled:bg-gray-400"
+                >
+                  Reject
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={!hasAtLeastOneTrueCondition()}
+                  className="bg-green-700 text-white font-semibold px-6 py-2 rounded-lg hover:bg-green-800 transition disabled:cursor-not-allowed disabled:bg-gray-400"
+                >
+                  Submit
+                </button>
+              </div>
             </div>
+          )}
 
-            <div className="flex gap-4 flex-wrap justify-end">
-              <button
-                onClick={() =>
-                  onReject(
-                    request.pickup_request_id,
-                    request.listing_id,
-                    conditions
-                  )
-                }
-                disabled={!areAllConditionsFalse()}
-                className="bg-red-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-red-700 transition disabled:cursor-not-allowed disabled:bg-gray-400"
-              >
-                Reject
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!hasAtLeastOneTrueCondition()}
-                className="bg-green-700 text-white font-semibold px-6 py-2 rounded-lg hover:bg-green-800 transition disabled:cursor-not-allowed disabled:bg-gray-400"
-              >
-                Submit
-              </button>
-              <button
-                onClick={handleBack}
-                className="bg-gray-400 text-white font-semibold px-6 py-2 rounded-lg hover:bg-gray-500 transition"
-              >
-                Back
-              </button>
-            </div>
+          {/* Back Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleBack}
+              className="bg-gray-400 text-white font-semibold px-6 py-2 rounded-lg hover:bg-gray-500 transition"
+            >
+              Back
+            </button>
           </div>
         </div>
       </div>
