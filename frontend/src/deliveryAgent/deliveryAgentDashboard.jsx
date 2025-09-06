@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import PickupRequestDetails from "./PickupRequestDetails";
+import ManageCustomerOrders from "./ManageCustomerOrders"; // ✅ Make sure the path is correct
 
 const DeliveryAgentDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -112,9 +113,11 @@ const DeliveryAgentDashboard = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-blue-50">
+      {/* Header */}
       <header className="w-full bg-white shadow sticky top-0 z-50 border-b">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex gap-4">
+          {/* Navigation Buttons */}
+          <div className="flex gap-4 flex-wrap">
             <button
               onClick={() => {
                 setSelected(null);
@@ -141,7 +144,22 @@ const DeliveryAgentDashboard = () => {
             >
               History
             </button>
+            <button
+              onClick={() => {
+                setSelected(null);
+                setActiveSection("delivery");
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition ${
+                activeSection === "delivery"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+              }`}
+            >
+              Delivery Requests
+            </button>
           </div>
+
+          {/* Logout */}
           <button
             onClick={handleLogout}
             className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg"
@@ -151,9 +169,14 @@ const DeliveryAgentDashboard = () => {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="w-full max-w-7xl px-6 py-8">
         {error && <div className="text-red-600 text-center mb-6">{error}</div>}
-        {!selected ? (
+
+        {/* Delivery Requests Section */}
+        {activeSection === "delivery" ? (
+          <ManageCustomerOrders />
+        ) : !selected ? (
           <div className="w-full">
             <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center">
               {activeSection === "pickup" ? "Pickup Requests" : "Pickup History"}
