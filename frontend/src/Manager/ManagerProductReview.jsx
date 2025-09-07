@@ -370,7 +370,7 @@ const ManagerProductReview = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="algorithmStart" className="block text-sm font-medium text-gray-700 mb-1">
-                      Algorithm Start ($)
+                      Algorithm Start (₹)
                     </label>
                     <input
                       type="number"
@@ -385,7 +385,7 @@ const ManagerProductReview = () => {
                   </div>
                   <div>
                     <label htmlFor="algorithmEnd" className="block text-sm font-medium text-gray-700 mb-1">
-                      Algorithm End ($)
+                      Algorithm End (₹)
                     </label>
                     <input
                       type="number"
@@ -419,7 +419,7 @@ const ManagerProductReview = () => {
                     <h4 className="text-sm font-medium text-blue-900 mb-2">Pricing Preview</h4>
                     <div className="text-sm text-blue-800 space-y-1">
                       {algorithmStart && algorithmEnd && (
-                        <div>Algorithm Range: ${algorithmStart} - ${algorithmEnd}</div>
+                        <div>Algorithm Range: ₹{algorithmStart} - ₹{algorithmEnd}</div>
                       )}
                     </div>
                   </div>

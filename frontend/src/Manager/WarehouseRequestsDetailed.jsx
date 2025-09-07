@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const PendingReviewsDetailed = () => {
+const WarehouseRequestsDetailed = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [product, setProduct] = useState(null);
@@ -68,7 +68,7 @@ const PendingReviewsDetailed = () => {
             );
 
             if (updateResponse.status === 200) {
-                navigate('/pending-reviews', {
+                navigate('/warehouse-reviews', {
                     state: { message: 'Product sent to live!', type: 'success' },
                 });
             }
@@ -86,7 +86,7 @@ const PendingReviewsDetailed = () => {
             );
 
             if (updateResponse.status === 200) {
-                navigate('/pending-reviews', {
+                navigate('/warehouse-reviews', {
                     state: { message: 'Product sent for redesign!', type: 'info' },
                 });
             }
@@ -112,7 +112,7 @@ const PendingReviewsDetailed = () => {
                 <div className="text-center">
                     <p className="text-red-600 text-lg mb-4">{error || 'Product not found'}</p>
                     <button
-                        onClick={() => navigate('/pending-reviews')}
+                        onClick={() => navigate('/warehouse-reviews')}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                     >
                         Back to Reviews
@@ -129,7 +129,7 @@ const PendingReviewsDetailed = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <button
-                            onClick={() => navigate('/pending-reviews')}
+                            onClick={() => navigate('/warehouse-reviews')}
                             className="flex items-center text-gray-600 hover:text-gray-900"
                         >
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,4 +222,4 @@ const PendingReviewsDetailed = () => {
     );
 };
 
-export default PendingReviewsDetailed;
+export default WarehouseRequestsDetailed;
