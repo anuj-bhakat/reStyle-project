@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("profile"); // "profile" or "password"
   const [user, setUser] = useState({});
   const [editableUser, setEditableUser] = useState({
@@ -27,33 +29,36 @@ const Profile = () => {
   const [passwordSuccess, setPasswordSuccess] = useState("");
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setProfileError("No token found. Please login.");
-        return;
-      }
-      try {
-        const response = await axios.get("http://localhost:3000/user/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = response.data.user;
-        setUser(data);
-        setEditableUser({
-          first_name: data.first_name || "",
-          last_name: data.last_name || "",
-          phone: data.phone || "",
-          plot: data.address?.plot || "",
-          colony: data.address?.colony || "",
-          city: data.address?.city || "",
-          country: data.address?.country || "",
-        });
-      } catch {
-        setProfileError("Failed to load profile.");
-      }
-    };
-    fetchUser();
-  }, []);
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      navigate('/login');
+    } else {
+      const fetchUser = async () => {
+        try {
+          const response = await axios.get("http://localhost:3000/user/profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = response.data.user;
+          
+          setUser(data);
+          setEditableUser({
+            first_name: data.first_name || "",
+            last_name: data.last_name || "",
+            phone: data.phone || "",
+            plot: data.address?.plot || "",
+            colony: data.address?.colony || "",
+            city: data.address?.city || "",
+            country: data.address?.country || "",
+          });
+        } catch {
+          setProfileError("Failed to load profile.");
+        }
+      };
+      fetchUser();
+    }
+  }, [navigate]);
+
 
   // Handlers for Profile form fields
   const handleProfileChange = (e) => {

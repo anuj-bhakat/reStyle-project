@@ -24,9 +24,7 @@ const ManagerProductEdit = () => {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:3000/products/${listing_id}`
-      );
+      const response = await axios.get(`http://localhost:3000/products/${listing_id}`);
       setProduct(response.data);
       setFormData({
         brand: response.data.brand || "",
@@ -34,7 +32,6 @@ const ManagerProductEdit = () => {
         condition: response.data.condition || "",
         description: response.data.description || "",
         checklist_json: response.data.checklist_json || {},
-        // Exclude base_price and min_max_price
       });
       setError(null);
     } catch (err) {
@@ -46,7 +43,7 @@ const ManagerProductEdit = () => {
   };
 
   const handleImageChange = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     const files = Array.from(e.target.files);
     if (files.length < 1 || files.length > 10) {
       alert("Please select between 1 and 10 images.");
@@ -56,13 +53,13 @@ const ManagerProductEdit = () => {
   };
 
   const handleInputChange = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleChecklistChange = (key, value, e) => {
-    if (e) e.stopPropagation(); // Prevent event bubbling
+    if (e) e.stopPropagation();
     setFormData((prev) => ({
       ...prev,
       checklist_json: { ...prev.checklist_json, [key]: value },
@@ -76,7 +73,7 @@ const ManagerProductEdit = () => {
 
   const handleUpdateFields = async (e) => {
     e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     try {
       setSubmitting(true);
       const updateData = {
@@ -84,10 +81,7 @@ const ManagerProductEdit = () => {
         final_price: calculateFinalPrice(),
         status: "redesigned",
       };
-      await axios.put(
-        `http://localhost:3000/products/${listing_id}`,
-        updateData
-      );
+      await axios.put(`http://localhost:3000/products/${listing_id}`, updateData);
       alert("Product updated successfully!");
       navigate("/manager-redesign-review");
     } catch (err) {
@@ -100,7 +94,7 @@ const ManagerProductEdit = () => {
 
   const handleRedesign = async (e) => {
     e.preventDefault();
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     if (images.length < 1 || images.length > 10) {
       alert("Please upload between 1 and 10 images.");
       return;
@@ -108,18 +102,13 @@ const ManagerProductEdit = () => {
     try {
       setSubmitting(true);
       const formDataImages = new FormData();
-      images.forEach((image, index) => {
+      images.forEach((image) => {
         formDataImages.append("images", image);
       });
-      await axios.put(
-        `http://localhost:3000/products/redesign/${listing_id}`,
-        formDataImages,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      alert("Product redesigned successfully!");
-      // navigate("/manager-redesign-review");
+      await axios.put(`http://localhost:3000/products/redesign/${listing_id}`, formDataImages, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      alert("Image updated successfully!"); // Alert on successful upload
     } catch (err) {
       setError("Failed to redesign product");
       console.error("Error redesigning product:", err);
@@ -188,7 +177,8 @@ const ManagerProductEdit = () => {
           <h2 className="text-xl font-semibold mb-6">Product Details</h2>
 
           {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <form className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" onSubmit={handleUpdateFields}>
+            {/* Brand (read-only) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Brand
@@ -197,10 +187,12 @@ const ManagerProductEdit = () => {
                 type="text"
                 name="brand"
                 value={formData.brand}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
               />
             </div>
+
+            {/* Product Type (read-only) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Product Type
@@ -209,10 +201,12 @@ const ManagerProductEdit = () => {
                 type="text"
                 name="product_type"
                 value={formData.product_type}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
               />
             </div>
+
+            {/* Condition */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Condition
@@ -230,7 +224,9 @@ const ManagerProductEdit = () => {
                 <option value="poor">Poor</option>
               </select>
             </div>
-            <div>
+
+            {/* Description full width */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description
               </label>
@@ -239,9 +235,11 @@ const ManagerProductEdit = () => {
                 value={formData.description}
                 onChange={handleInputChange}
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
             </div>
+
+            {/* Final Price Multiplier */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Final Price Multiplier
@@ -257,6 +255,8 @@ const ManagerProductEdit = () => {
                 <option value="2.2">2.2x</option>
               </select>
             </div>
+
+            {/* Calculated Final Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Calculated Final Price
@@ -265,16 +265,14 @@ const ManagerProductEdit = () => {
                 type="text"
                 value={`${calculateFinalPrice().toFixed(2)}`}
                 readOnly
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
               />
             </div>
-          </div>
+          </form>
 
           {/* Checklist */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Checklist
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Checklist</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {formData.checklist_json &&
                 Object.entries(formData.checklist_json).map(([key, value]) => (
@@ -285,9 +283,7 @@ const ManagerProductEdit = () => {
                     <input
                       type="text"
                       value={value}
-                      onChange={(e) =>
-                        handleChecklistChange(key, e.target.value, e)
-                      }
+                      onChange={(e) => handleChecklistChange(key, e.target.value, e)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -295,26 +291,29 @@ const ManagerProductEdit = () => {
             </div>
           </div>
 
-          {/* Image Upload */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Upload 1-10 New Images
-            </label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Selected: {images.length} images (1-10 required)
-            </p>
+          {/* Upload Images & Button in a single row */}
+          <div className="mb-6 flex items-center space-x-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload 1-10 New Images
+              </label>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={submitting}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Selected: {images.length} images (1-10 required)
+              </p>
+            </div>
             <button
               type="button"
               onClick={handleRedesign}
               disabled={submitting || images.length < 1 || images.length > 10}
-              className="mt-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className={`bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {submitting ? "Uploading..." : "Upload Images"}
             </button>
@@ -325,10 +324,10 @@ const ManagerProductEdit = () => {
             <button
               type="button"
               onClick={handleUpdateFields}
-              disabled={submitting || images.length < 1}
+              disabled={submitting}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              {submitting ? "Updating..." : "Update Fields"}
+              {submitting ? "Update Fields" : "Update Fields"}
             </button>
           </div>
         </div>

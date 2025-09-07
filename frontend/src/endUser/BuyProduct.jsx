@@ -43,16 +43,23 @@ const BuyProduct = () => {
     saveCart(updatedCart);
   };
 
-  // ----- FETCH PRODUCTS -----
+
   useEffect(() => {
-    fetchProducts();
-    setCart(getCart());
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    } else {
+      fetchProducts();
+      setCart(getCart());
+    }
+  }, [navigate]);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:3000/products/get/live");
+      const response = await axios.get(
+        "http://localhost:3000/products/get/live"
+      );
       setProducts(response.data);
       setError("");
     } catch (err) {
@@ -170,22 +177,32 @@ const BuyProduct = () => {
               {/* Filters */}
               <div className="lg:w-64 flex-shrink-0">
                 <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Filters
+                  </h3>
 
                   {/* Product Type */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Product Type
+                    </label>
                     <select
                       value={filters.productType}
                       onChange={(e) =>
-                        setFilters((prev) => ({ ...prev, productType: e.target.value }))
+                        setFilters((prev) => ({
+                          ...prev,
+                          productType: e.target.value,
+                        }))
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     >
                       <option value="">All Types</option>
                       {uniqueTypes.map((type) => (
                         <option key={type} value={type}>
-                          {type}
+                          {type
+                            .split(" ")
+                            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                            .join(" ")}
                         </option>
                       ))}
                     </select>
@@ -193,11 +210,16 @@ const BuyProduct = () => {
 
                   {/* Brand */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Brand
+                    </label>
                     <select
                       value={filters.brand}
                       onChange={(e) =>
-                        setFilters((prev) => ({ ...prev, brand: e.target.value }))
+                        setFilters((prev) => ({
+                          ...prev,
+                          brand: e.target.value,
+                        }))
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     >
@@ -212,11 +234,16 @@ const BuyProduct = () => {
 
                   {/* Condition */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Condition</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Condition
+                    </label>
                     <select
                       value={filters.condition}
                       onChange={(e) =>
-                        setFilters((prev) => ({ ...prev, condition: e.target.value }))
+                        setFilters((prev) => ({
+                          ...prev,
+                          condition: e.target.value,
+                        }))
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     >
@@ -229,11 +256,16 @@ const BuyProduct = () => {
 
                   {/* Price */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Price Range
+                    </label>
                     <select
                       value={filters.priceRange}
                       onChange={(e) =>
-                        setFilters((prev) => ({ ...prev, priceRange: e.target.value }))
+                        setFilters((prev) => ({
+                          ...prev,
+                          priceRange: e.target.value,
+                        }))
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     >
@@ -249,7 +281,12 @@ const BuyProduct = () => {
 
                   <button
                     onClick={() =>
-                      setFilters({ productType: "", brand: "", condition: "", priceRange: "" })
+                      setFilters({
+                        productType: "",
+                        brand: "",
+                        condition: "",
+                        priceRange: "",
+                      })
                     }
                     className="w-full text-sm px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition"
                   >
@@ -262,10 +299,13 @@ const BuyProduct = () => {
               <div className="flex-1">
                 <div className="bg-white rounded-lg shadow-sm p-4 mb-6 flex items-center justify-between">
                   <span className="text-sm text-gray-600">
-                    Showing {filteredAndSortedProducts.length} of {products.length} products
+                    Showing {filteredAndSortedProducts.length} of{" "}
+                    {products.length} products
                   </span>
                   <div className="flex items-center space-x-2">
-                    <label className="text-sm font-medium text-gray-700">Sort by:</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      Sort by:
+                    </label>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
@@ -288,39 +328,53 @@ const BuyProduct = () => {
                     {filteredAndSortedProducts.map((product) => (
                       <div
                         key={product.listing_id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+                        className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col h-full group cursor-pointer"
                       >
-                        <div onClick={() => handleProductClick(product.listing_id)}>
-                          <div className="aspect-square overflow-hidden">
+                        {/* Clickable Section */}
+                        <div
+                          onClick={() => handleProductClick(product.listing_id)}
+                          className="flex-1 flex flex-col"
+                        >
+                          {/* Product Image */}
+                          <div className="aspect-square overflow-hidden rounded-t-lg bg-gray-100">
                             <img
                               src={getPrimaryImage(product)}
                               alt={product.name}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               onError={handleImageError}
                             />
                           </div>
-                          <div className="p-4">
-                            <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+
+                          {/* Product Info */}
+                          <div className="p-4 flex flex-col flex-1">
+                            <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">
                               {product.brand} {product.product_type}
                             </h3>
-                            <p className="text-xs text-gray-500 mt-1">{product.description}</p>
-                            <p className="mt-2 text-indigo-600 font-bold text-lg">
+                            <p className="text-xs text-gray-500 line-clamp-2">
+                              {product.description}
+                            </p>
+                            <p className="mt-3 text-blue-600 font-bold text-lg">
                               {formatPrice(product.final_price)}
                             </p>
+
+                            {/* Spacer to push button down */}
+                            <div className="mt-auto pt-4" />
                           </div>
                         </div>
+
+                        {/* Cart Button */}
                         <div className="px-4 pb-4">
                           {isInCart(product.listing_id) ? (
                             <button
                               onClick={() => removeFromCart(product.listing_id)}
-                              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
+                              className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 transition"
                             >
                               − Remove from Cart
                             </button>
                           ) : (
                             <button
                               onClick={() => addToCart(product.listing_id)}
-                              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
                             >
                               + Add to Cart
                             </button>

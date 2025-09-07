@@ -137,7 +137,7 @@ const WarehouseRequestsDetailed = () => {
                             </svg>
                             Back to Reviews
                         </button>
-                        <h1 className="text-xl font-semibold text-gray-900">Product Review Details</h1>
+                        <h1 className="text-xl font-semibold text-gray-900">Warehouse Review Details</h1>
                         <div className="w-20"></div>
                     </div>
                 </div>

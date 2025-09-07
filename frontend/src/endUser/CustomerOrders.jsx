@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 // Shows detailed product info in order preview, with polished typography and subtle badges
 function CustomerOrdersPreview({ order }) {
@@ -197,12 +198,20 @@ export default function CustomerOrders() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [errorOrders, setErrorOrders] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const navigate = useNavigate();
 
   const customerId = localStorage.getItem("userid");
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+      }
+  }, [navigate]);
+
+  useEffect(() => {
     if (!customerId) {
-      setErrorOrders("Customer ID not found in localStorage");
+      setErrorOrders("Customer ID not found");
       setLoadingOrders(false);
       return;
     }
