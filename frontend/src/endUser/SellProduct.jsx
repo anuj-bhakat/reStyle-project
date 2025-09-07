@@ -11,14 +11,41 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 
+const PRODUCT_SPEC_FIELDS = {
+  shoes: {
+    sizeLabel: "Shoe Size *",
+    sizeOptions: ["", "6", "7", "8", "9", "10", "11"],
+    colorLabel: "Color *",
+    materialLabel: "Material *",
+  },
+  clothes: {
+    sizeLabel: "Clothing Size *",
+    sizeOptions: ["", "S", "M", "L", "XL", "XXL"],
+    colorLabel: "Color *",
+    materialLabel: "Material *",
+  },
+  bag: {
+    sizeLabel: "Bag Capacity (L) *",
+    sizeOptions: ["", "10L", "15L", "20L", "25L"],
+    colorLabel: "Color *",
+    materialLabel: "Material *",
+  },
+  wristwatch: {
+    sizeLabel: "Dial Size (mm) *",
+    sizeOptions: ["", "38", "40", "42", "44"],
+    colorLabel: "Color *",
+    materialLabel: "Strap Material *",
+  },
+};
+
 const SellProduct = () => {
   // Form state
   const [formData, setFormData] = useState({
-    description: "",
+    productType: "",
     checklist: { size: "", color: "", material: "" },
+    description: "",
     brandName: "",
     condition: "",
-    productType: "",
     sellerId: "",
   });
 
@@ -54,7 +81,6 @@ const SellProduct = () => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-    // Reset validation attempted flag when user starts typing
     if (validationAttempted) {
       setValidationAttempted(false);
     }
@@ -66,11 +92,9 @@ const SellProduct = () => {
       ...prev,
       checklist: { ...prev.checklist, [field]: value },
     }));
-    // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-    // Reset validation attempted flag when user starts typing
     if (validationAttempted) {
       setValidationAttempted(false);
     }
@@ -124,95 +148,88 @@ const SellProduct = () => {
     );
   };
 
-  // Validate form for step progression
+  // Product spec helper
+  const currentSpecs = PRODUCT_SPEC_FIELDS[formData.productType] || {};
+
+  // Validate step 1
   const validateStep1 = () => {
     const newErrors = {};
-
+    if (!formData.productType) {
+      newErrors.productType = "Product type is required.";
+    }
+    // Validate product specs only if productType is selected
+    if (formData.productType) {
+      if (!formData.checklist.size.trim())
+        newErrors.size = `${currentSpecs.sizeLabel} is required.`;
+      if (!formData.checklist.color.trim())
+        newErrors.color = `${currentSpecs.colorLabel} is required.`;
+      if (!formData.checklist.material.trim())
+        newErrors.material = `${currentSpecs.materialLabel} is required.`;
+    }
     if (!formData.description.trim()) {
       newErrors.description = "Product description is required.";
     } else if (formData.description.length > 500) {
       newErrors.description = "Description must be 500 characters or less.";
     }
-
-    if (!formData.checklist.size.trim()) newErrors.size = "Size is required.";
-    if (!formData.checklist.color.trim())
-      newErrors.color = "Color is required.";
-    if (!formData.checklist.material.trim())
-      newErrors.material = "Material is required.";
-
     if (!formData.brandName.trim()) {
       newErrors.brandName = "Brand name is required.";
     }
-
     if (!formData.condition) {
       newErrors.condition = "Condition is required.";
     }
-
-    if (!formData.productType) {
-      newErrors.productType = "Product type is required.";
-    }
-
     if (!formData.sellerId) {
       newErrors.sellerId = "Seller ID is required. Please log in.";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Validate form for final submission
+  // Validate whole form
   const validateForm = () => {
     const newErrors = {};
-
+    if (!formData.productType) {
+      newErrors.productType = "Product type is required.";
+    }
+    // Validate product specs only if productType is selected
+    if (formData.productType) {
+      if (!formData.checklist.size.trim())
+        newErrors.size = `${currentSpecs.sizeLabel} is required.`;
+      if (!formData.checklist.color.trim())
+        newErrors.color = `${currentSpecs.colorLabel} is required.`;
+      if (!formData.checklist.material.trim())
+        newErrors.material = `${currentSpecs.materialLabel} is required.`;
+    }
     if (!formData.description.trim()) {
       newErrors.description = "Product description is required.";
     } else if (formData.description.length > 500) {
       newErrors.description = "Description must be 500 characters or less.";
     }
-
-    if (!formData.checklist.size.trim()) newErrors.size = "Size is required.";
-    if (!formData.checklist.color.trim())
-      newErrors.color = "Color is required.";
-    if (!formData.checklist.material.trim())
-      newErrors.material = "Material is required.";
-
     if (!formData.brandName.trim()) {
       newErrors.brandName = "Brand name is required.";
     }
-
     if (!formData.condition) {
       newErrors.condition = "Condition is required.";
     }
-
-    if (!formData.productType) {
-      newErrors.productType = "Product type is required.";
-    }
-
     if (!formData.sellerId) {
       newErrors.sellerId = "Seller ID is required. Please log in.";
     }
-
     const includedImages = images.filter((img) => img.include);
     if (includedImages.length === 0) {
       newErrors.images = "At least one image must be included.";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
+  // Form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) {
       setCurrentStep(1);
       return;
     }
-
     setIsSubmitting(true);
     setSubmitError("");
-
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("description", formData.description);
@@ -224,42 +241,27 @@ const SellProduct = () => {
       formDataToSend.append("condition", formData.condition);
       formDataToSend.append("product_type", formData.productType);
       formDataToSend.append("seller_id", formData.sellerId);
-
       const includedImages = images.filter((img) => img.include);
       includedImages.forEach((img) => {
         formDataToSend.append("images", img.file);
       });
-
-      const response = await axios.post(
-        "http://localhost:3000/products/",
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
+      await axios.post("http://localhost:3000/products/", formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setSubmitSuccess(true);
       // Reset form or redirect
     } catch (error) {
-      // setSubmitError(error.response?.data?.message || 'An error occurred while submitting the product.');
-      console.error("Submit error ->", error);
-      console.error("Error response:", error.response);
-
       const backendError =
         error.response?.data?.message ||
         error.response?.data?.error ||
         JSON.stringify(error.response?.data) ||
         error.message;
-
       setSubmitError(backendError);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Steps for progress indicator
   const steps = [
     { id: 1, name: "Details", description: "Product information" },
     { id: 2, name: "Images", description: "Upload product photos" },
@@ -289,9 +291,7 @@ const SellProduct = () => {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
               Sell Your Product
             </h1>
-            <p className="text-gray-600">
-              List your item on our high-end marketplace
-            </p>
+            <p className="text-gray-600">List your item on our high-end marketplace</p>
           </div>
 
           {/* Progress Indicator */}
@@ -321,21 +321,14 @@ const SellProduct = () => {
             <div className="flex justify-center mt-2">
               {steps.map((step) => (
                 <div key={step.id} className="text-center mx-4">
-                  <div className="text-sm font-medium text-gray-900">
-                    {step.name}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {step.description}
-                  </div>
+                  <div className="text-sm font-medium text-gray-900">{step.name}</div>
+                  <div className="text-xs text-gray-500">{step.description}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white rounded-lg shadow-xl p-8"
-          >
+          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-xl p-8">
             {/* Step 1: Product Details */}
             {currentStep === 1 && (
               <div className="space-y-6 animate-fade-in">
@@ -361,123 +354,115 @@ const SellProduct = () => {
                   </div>
                 )}
 
-                {/* Description */}
+                {/* Product Type */}
                 <div>
                   <label
-                    htmlFor="description"
+                    htmlFor="productType"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Product Description *
+                    Product Type *
                   </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    rows={4}
-                    value={formData.description}
+                  <select
+                    id="productType"
+                    name="productType"
+                    value={formData.productType}
                     onChange={handleInputChange}
                     className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.description ? "border-red-500" : "border-gray-300"
+                      errors.productType ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="Describe your product in detail..."
-                  />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-sm text-gray-500">
-                      {formData.description.length}/500 characters
-                    </span>
-                    {errors.description && (
-                      <span className="text-sm text-red-600">
-                        {errors.description}
-                      </span>
-                    )}
-                  </div>
+                  >
+                    <option value="">Select product type</option>
+                    <option value="shoes">Shoes</option>
+                    <option value="wristwatch">Wristwatch</option>
+                    <option value="clothes">Clothes</option>
+                    <option value="bag">Bag</option>
+                  </select>
+                  {errors.productType && (
+                    <span className="text-sm text-red-600">{errors.productType}</span>
+                  )}
                 </div>
 
-                {/* Checklist JSON */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center mb-3">
-                    <InformationCircleIcon className="h-5 w-5 text-blue-500 mr-2" />
-                    <h3 className="text-lg font-medium text-gray-900">
-                      Product Specifications
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label
-                        htmlFor="size"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Size *
-                      </label>
-                      <input
-                        type="text"
-                        id="size"
-                        value={formData.checklist.size}
-                        onChange={(e) =>
-                          handleChecklistChange("size", e.target.value)
-                        }
-                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          errors.size ? "border-red-500" : "border-gray-300"
-                        }`}
-                        placeholder="e.g., M, 10"
-                      />
-                      {errors.size && (
-                        <span className="text-sm text-red-600">
-                          {errors.size}
-                        </span>
-                      )}
+                {/* Specifications */}
+                {formData.productType && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center mb-3">
+                      <InformationCircleIcon className="h-5 w-5 text-blue-500 mr-2" />
+                      <h3 className="text-lg font-medium text-gray-900">
+                        Product Specifications
+                      </h3>
                     </div>
-                    <div>
-                      <label
-                        htmlFor="color"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Color *
-                      </label>
-                      <input
-                        type="text"
-                        id="color"
-                        value={formData.checklist.color}
-                        onChange={(e) =>
-                          handleChecklistChange("color", e.target.value)
-                        }
-                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          errors.color ? "border-red-500" : "border-gray-300"
-                        }`}
-                        placeholder="e.g., Red, Blue"
-                      />
-                      {errors.color && (
-                        <span className="text-sm text-red-600">
-                          {errors.color}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="material"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Material *
-                      </label>
-                      <input
-                        type="text"
-                        id="material"
-                        value={formData.checklist.material}
-                        onChange={(e) =>
-                          handleChecklistChange("material", e.target.value)
-                        }
-                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                          errors.material ? "border-red-500" : "border-gray-300"
-                        }`}
-                        placeholder="e.g., Cotton, Leather"
-                      />
-                      {errors.material && (
-                        <span className="text-sm text-red-600">
-                          {errors.material}
-                        </span>
-                      )}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Size (manual input instead of select) */}
+                      <div>
+                        <label
+                          htmlFor="size"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          {currentSpecs.sizeLabel}
+                        </label>
+                        <input
+                          type="text"
+                          id="size"
+                          value={formData.checklist.size}
+                          onChange={(e) => handleChecklistChange("size", e.target.value)}
+                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            errors.size ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="Enter size"
+                        />
+                        {errors.size && (
+                          <span className="text-sm text-red-600">{errors.size}</span>
+                        )}
+                      </div>
+
+                      {/* Color */}
+                      <div>
+                        <label
+                          htmlFor="color"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          {currentSpecs.colorLabel}
+                        </label>
+                        <input
+                          type="text"
+                          id="color"
+                          value={formData.checklist.color}
+                          onChange={(e) => handleChecklistChange("color", e.target.value)}
+                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            errors.color ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="e.g., Red, Blue"
+                        />
+                        {errors.color && (
+                          <span className="text-sm text-red-600">{errors.color}</span>
+                        )}
+                      </div>
+
+                      {/* Material */}
+                      <div>
+                        <label
+                          htmlFor="material"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          {currentSpecs.materialLabel}
+                        </label>
+                        <input
+                          type="text"
+                          id="material"
+                          value={formData.checklist.material}
+                          onChange={(e) => handleChecklistChange("material", e.target.value)}
+                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            errors.material ? "border-red-500" : "border-gray-300"
+                          }`}
+                          placeholder="e.g., Cotton, Leather"
+                        />
+                        {errors.material && (
+                          <span className="text-sm text-red-600">{errors.material}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Brand Name */}
                 <div>
@@ -499,9 +484,7 @@ const SellProduct = () => {
                     placeholder="Enter brand name"
                   />
                   {errors.brandName && (
-                    <span className="text-sm text-red-600">
-                      {errors.brandName}
-                    </span>
+                    <span className="text-sm text-red-600">{errors.brandName}</span>
                   )}
                 </div>
 
@@ -528,50 +511,44 @@ const SellProduct = () => {
                     <option value="worn">Worn</option>
                   </select>
                   {errors.condition && (
-                    <span className="text-sm text-red-600">
-                      {errors.condition}
-                    </span>
+                    <span className="text-sm text-red-600">{errors.condition}</span>
                   )}
                 </div>
 
-                {/* Product Type */}
-                <div>
+                {/* Product Description: added top margin */}
+                <div className="mt-6">
                   <label
-                    htmlFor="productType"
+                    htmlFor="description"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Product Type *
+                    Product Description *
                   </label>
-                  <select
-                    id="productType"
-                    name="productType"
-                    value={formData.productType}
+                  <textarea
+                    id="description"
+                    name="description"
+                    rows={4}
+                    value={formData.description}
                     onChange={handleInputChange}
                     className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.productType ? "border-red-500" : "border-gray-300"
+                      errors.description ? "border-red-500" : "border-gray-300"
                     }`}
-                  >
-                    <option value="">Select product type</option>
-                    <option value="shoes">Shoes</option>
-                    <option value="wristwatch">Wristwatch</option>
-                    <option value="clothes">Clothes</option>
-                    <option value="bag">Bag</option>
-                    
-                  </select>
-                  {errors.productType && (
-                    <span className="text-sm text-red-600">
-                      {errors.productType}
+                    placeholder="Describe your product in detail..."
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-sm text-gray-500">
+                      {formData.description.length}/500 characters
                     </span>
-                  )}
+                    {errors.description && (
+                      <span className="text-sm text-red-600">{errors.description}</span>
+                    )}
+                  </div>
                 </div>
 
                 {errors.sellerId && (
                   <div className="bg-red-50 border border-red-200 rounded-md p-4">
                     <div className="flex">
                       <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-2" />
-                      <span className="text-sm text-red-700">
-                        {errors.sellerId}
-                      </span>
+                      <span className="text-sm text-red-700">{errors.sellerId}</span>
                     </div>
                   </div>
                 )}
@@ -661,9 +638,7 @@ const SellProduct = () => {
 
                 {errors.images && (
                   <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                    <span className="text-sm text-red-700">
-                      {errors.images}
-                    </span>
+                    <span className="text-sm text-red-700">{errors.images}</span>
                   </div>
                 )}
               </div>
@@ -681,28 +656,23 @@ const SellProduct = () => {
                   <h3 className="font-medium text-gray-900">Product Summary</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
+                      <strong>Type:</strong> {formData?.productType || "Not provided"}
+                    </div>
+                    <div>
                       <strong>Description:</strong>{" "}
                       {formData?.description || "Not provided"}
                     </div>
                     <div>
-                      <strong>Brand:</strong>{" "}
-                      {formData?.brandName || "Not provided"}
+                      <strong>Brand:</strong> {formData?.brandName || "Not provided"}
                     </div>
                     <div>
-                      <strong>Condition:</strong>{" "}
-                      {formData?.condition || "Not provided"}
+                      <strong>Condition:</strong> {formData?.condition || "Not provided"}
                     </div>
                     <div>
-                      <strong>Type:</strong>{" "}
-                      {formData?.productType || "Not provided"}
+                      <strong>Size:</strong> {formData?.checklist?.size || "Not provided"}
                     </div>
                     <div>
-                      <strong>Size:</strong>{" "}
-                      {formData?.checklist?.size || "Not provided"}
-                    </div>
-                    <div>
-                      <strong>Color:</strong>{" "}
-                      {formData?.checklist?.color || "Not provided"}
+                      <strong>Color:</strong> {formData?.checklist?.color || "Not provided"}
                     </div>
                     <div>
                       <strong>Material:</strong>{" "}
@@ -747,7 +717,6 @@ const SellProduct = () => {
                         setCurrentStep((prev) => prev + 1);
                         setValidationAttempted(false);
                       }
-                      // If validation fails, errors will be shown and user stays on current step
                     } else {
                       setCurrentStep((prev) => prev + 1);
                     }
@@ -783,14 +752,11 @@ const SellProduct = () => {
     );
   } catch (error) {
     console.error("Render error in SellProduct:", error);
-    // Don't set state during render - use useEffect for side effects
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-8 text-center max-w-md">
           <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Something went wrong
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
           <p className="text-gray-600 mb-4">
             We encountered an error while loading the form.
           </p>
