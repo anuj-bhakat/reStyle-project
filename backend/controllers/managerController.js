@@ -12,35 +12,6 @@ export const getAllManagersController = async (req, res) => {
   }
 };
 
-// export const signupManagerController = async (req, res) => {
-//   try {
-//     // The admin info injected by middleware
-//     const adminInfo = req.admin;
-
-//     // Your incoming manager data
-//     const managerData = req.body;
-
-//     // Attach is_admin = true for managers created by an authenticated admin
-//     managerData.is_admin = true;
-
-//     // Call create manager service with this info
-//     const newManager = await createManager(managerData);
-
-//     res.status(201).json({
-//       message: 'Manager created',
-//       manager: {
-//         id: newManager.id,
-//         manager_id: newManager.manager_id,
-//         name: newManager.name,
-//         email: newManager.email,
-//         phone: newManager.phone,
-//         is_admin: newManager.is_admin,
-//       }
-//     });
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// };
 export const signupManagerController = async (req, res) => {
   try {
     const managerData = req.body;
