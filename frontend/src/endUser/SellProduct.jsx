@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   PhotoIcon,
@@ -49,6 +50,8 @@ const SellProduct = () => {
     sellerId: "",
   });
 
+  const navigate = useNavigate();
+
   // Image state
   const [images, setImages] = useState([]);
   const [imageErrors, setImageErrors] = useState([]);
@@ -64,7 +67,11 @@ const SellProduct = () => {
   // Get seller ID from localStorage
   useEffect(() => {
     const userId = localStorage.getItem("userid");
-    if (userId) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+    } else if (userId) {
       setFormData((prev) => ({ ...prev, sellerId: userId }));
     } else {
       setErrors((prev) => ({
@@ -72,7 +79,7 @@ const SellProduct = () => {
         sellerId: "Seller ID not found. Please log in.",
       }));
     }
-  }, []);
+  }, [navigate]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -157,7 +164,6 @@ const SellProduct = () => {
     if (!formData.productType) {
       newErrors.productType = "Product type is required.";
     }
-    // Validate product specs only if productType is selected
     if (formData.productType) {
       if (!formData.checklist.size.trim())
         newErrors.size = `${currentSpecs.sizeLabel} is required.`;
@@ -190,7 +196,6 @@ const SellProduct = () => {
     if (!formData.productType) {
       newErrors.productType = "Product type is required.";
     }
-    // Validate product specs only if productType is selected
     if (formData.productType) {
       if (!formData.checklist.size.trim())
         newErrors.size = `${currentSpecs.sizeLabel} is required.`;
@@ -233,10 +238,7 @@ const SellProduct = () => {
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("description", formData.description);
-      formDataToSend.append(
-        "checklist_json",
-        JSON.stringify(formData.checklist)
-      );
+      formDataToSend.append("checklist_json", JSON.stringify(formData.checklist));
       formDataToSend.append("brand", formData.brandName);
       formDataToSend.append("condition", formData.condition);
       formDataToSend.append("product_type", formData.productType);
@@ -249,7 +251,10 @@ const SellProduct = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setSubmitSuccess(true);
-      // Reset form or redirect
+      // Redirect after showing success message
+      setTimeout(() => {
+        navigate("/home", { state: { showBuy: true } });
+      }, 1500);
     } catch (error) {
       const backendError =
         error.response?.data?.message ||
@@ -515,7 +520,7 @@ const SellProduct = () => {
                   )}
                 </div>
 
-                {/* Product Description: added top margin */}
+                {/* Product Description */}
                 <div className="mt-6">
                   <label
                     htmlFor="description"
