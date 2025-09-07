@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { UserIcon, ShoppingBagIcon, TagIcon } from '@heroicons/react/24/outline';
 import BuyProduct from './BuyProduct';
 import SellProduct from './SellProduct';
@@ -8,6 +8,7 @@ import CustomerOrderHistory from './CustomerOrderHistory';
 
 const UserHome = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isBuyActive, setIsBuyActive] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
@@ -22,6 +23,14 @@ const UserHome = () => {
     }
     updateCartCount();
   }, [navigate]);
+
+  useEffect(() => {
+    if (location.state?.showBuy) {
+      setIsBuyActive(true);
+    } else {
+      setIsBuyActive(true); // default true anyway
+    }
+  }, [location.state]);
 
   // Update cart count whenever the component mounts or cart changes
   const updateCartCount = () => {

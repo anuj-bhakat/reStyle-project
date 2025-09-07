@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import PickupRequestDetails from "./PickupRequestDetails";
-import ManageCustomerOrders from "./ManageCustomerOrders"; // ✅ Make sure the path is correct
+import ManageCustomerOrders from "./ManageCustomerOrders";
 
 const DeliveryAgentDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -15,23 +15,16 @@ const DeliveryAgentDashboard = () => {
   const token = localStorage.getItem("agentToken");
   const agentId = localStorage.getItem("agent_id");
 
-  useEffect(() => {
-    if (!token) {
-      navigate("/agent-login", { replace: true });
-      return;
-    }
-    fetchPickupRequests();
-  }, [token, navigate]);
-
-  const fetchPickupRequests = async () => {
+  const loadAllPickupData = async () => {
     try {
       const res = await axios.get(`http://localhost:3000/pickup_requests/get/${agentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const requests = res.data || [];
-      setRequests(requests);
+      const requestsData = res.data || [];
+      setRequests(requestsData);
+
       const productFetches = await Promise.all(
-        requests.map((req) =>
+        requestsData.map((req) =>
           axios
             .get(`http://localhost:3000/products/${req.listing_id}`, {
               headers: { Authorization: `Bearer ${token}` },
@@ -40,17 +33,24 @@ const DeliveryAgentDashboard = () => {
             .catch(() => null)
         )
       );
+
       const productMap = {};
       productFetches.forEach((entry) => {
-        if (entry) {
-          productMap[entry.listing_id] = entry.data;
-        }
+        if (entry) productMap[entry.listing_id] = entry.data;
       });
       setProductDetailsMap(productMap);
     } catch (err) {
       setError("Failed to fetch pickup requests.");
     }
   };
+
+  useEffect(() => {
+    if (!token) {
+      navigate("/agent-login", { replace: true });
+      return;
+    }
+    loadAllPickupData();
+  }, [token, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("agentToken");
@@ -122,6 +122,7 @@ const DeliveryAgentDashboard = () => {
               onClick={() => {
                 setSelected(null);
                 setActiveSection("pickup");
+                loadAllPickupData();
               }}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 activeSection === "pickup"
@@ -135,6 +136,7 @@ const DeliveryAgentDashboard = () => {
               onClick={() => {
                 setSelected(null);
                 setActiveSection("history");
+                loadAllPickupData();
               }}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 activeSection === "history"
@@ -148,6 +150,7 @@ const DeliveryAgentDashboard = () => {
               onClick={() => {
                 setSelected(null);
                 setActiveSection("delivery");
+                // Usually ManageCustomerOrders handles its own fetching
               }}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 activeSection === "delivery"
@@ -214,9 +217,7 @@ const DeliveryAgentDashboard = () => {
                       )}
                       <div className="text-center">
                         <div className="font-bold text-lg">{product?.brand || "Brand Unknown"}</div>
-                        <div className="text-gray-600 text-sm capitalize">
-                          {product?.product_type || "Unknown Type"}
-                        </div>
+                        <div className="text-gray-600 text-sm capitalize">{product?.product_type || "Unknown Type"}</div>
                         <div className="text-xs text-gray-500 mt-2">
                           <strong>Created:</strong> {new Date(req.created_at).toLocaleString()}
                         </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function SellerProductDetails({ product, backToList }) {
   const [mainImage, setMainImage] = useState(
@@ -250,11 +251,19 @@ export default function SellerOrderHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+      }
+  }, [navigate]);
 
   const fetchOrders = async () => {
     const seller_id = localStorage.getItem("userid");
     if (!seller_id) {
-      setError("Seller ID not found in localStorage");
+      setError("Seller ID not found");
       setLoading(false);
       return;
     }

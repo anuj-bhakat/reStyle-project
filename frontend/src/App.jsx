@@ -14,7 +14,7 @@ import SellerOrderHistory from "./endUser/SellerOrderHistory";
 import CustomerOrders from "./endUser/CustomerOrders";
 import CustomerOrderHistory from "./endUser/CustomerOrderHistory";
 import OrderSummary from "./endUser/OrderSummary";
-import Cart from "./endUser/Cart"; // ✅ NEW import
+import Cart from "./endUser/Cart";
 
 // Admin
 import ManagerManagement from "./admin/ManagerManagement";
@@ -30,8 +30,8 @@ import DeliveryAgentDashboard from "./deliveryAgent/deliveryAgentDashboard";
 import ManagerDashboard from "./Manager/ManagerDashboard";
 import ManagerProductReview from "./Manager/ManagerProductReview";
 import ManagerLogin from "./Manager/ManagerLogin";
-import PendingReviews from "./Manager/PendingReviews";
-import PendingReviewsDetailed from "./Manager/PendingReviewsDetailed";
+import WarehouseRequests from "./Manager/WarehouseRequests";
+import WarehouseRequestsDetailed from "./Manager/WarehouseRequestsDetailed";
 import ManagerRedesignReview from "./Manager/ManagerRedesignReview";
 import ManagerProductEdit from "./Manager/ManagerProductEdit";
 import ManageCustomerOrders from "./deliveryAgent/ManageCustomerOrders";
@@ -55,7 +55,7 @@ function App() {
         <Route path="/customer-orders" element={<CustomerOrders />} />
         <Route path="/customer-history" element={<CustomerOrderHistory />} />
         <Route path="/order-summary" element={<OrderSummary />} />
-        <Route path="/cart" element={<Cart />} /> {/* ✅ NEW route */}
+        <Route path="/cart" element={<Cart />} />
 
         {/* Admin Routes */}
         <Route path="/managers" element={<ManagerManagement />} />
@@ -73,8 +73,8 @@ function App() {
         <Route path="/manager-login" element={<ManagerLogin />} />
         <Route path="/manager-dashboard" element={<ManagerDashboard />} />
         <Route path="/manager-review" element={<ManagerProductReview />} />
-        <Route path="/pending-reviews" element={<PendingReviews />} />
-        <Route path="/pending-reviews-detailed" element={<PendingReviewsDetailed />} />
+        <Route path="/warehouse-reviews" element={<WarehouseRequests />} />
+        <Route path="/warehouse-reviews-detailed" element={<WarehouseRequestsDetailed />} />
         <Route path="/manager-redesign-review" element={<ManagerRedesignReview />} />
         <Route path="/manager-edit-product" element={<ManagerProductEdit />} />
 

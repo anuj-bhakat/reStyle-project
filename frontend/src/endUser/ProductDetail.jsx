@@ -17,6 +17,13 @@ const ProductDetail = () => {
   const [cart, setCart] = useState([]);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     if (!listingId) {
       setError('Product ID missing');
       setLoading(false);
@@ -33,6 +40,11 @@ const ProductDetail = () => {
       if (response.status === 200) {
         setProduct(response.data);
         setError('');
+        // Auto select size if only one size is present (string)
+        const sizeVal = response.data.checklist_json?.size;
+        if (sizeVal && typeof sizeVal === 'string') {
+          setSelectedSize(sizeVal);
+        }
       } else {
         setError('Product not found');
       }
@@ -75,22 +87,22 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
+    // If size exists but not selected, alert
     if (!selectedSize && product.checklist_json?.size) {
       alert('Please select a size');
       return;
     }
-
     const updatedCart = [...cart, product.listing_id];
     updateCartInSession(updatedCart);
   };
 
   const handleRemoveFromCart = () => {
-    const updatedCart = cart.filter(id => id !== product.listing_id);
+    const updatedCart = cart.filter((id) => id !== product.listing_id);
     updateCartInSession(updatedCart);
   };
 
   const handleBuyNow = () => {
-    navigate("/order-summary", {
+    navigate('/order-summary', {
       state: {
         product,
         selectedSize,
@@ -126,6 +138,17 @@ const ProductDetail = () => {
     );
   }
 
+  // Dynamic labels based on product_type
+  const sizeLabel =
+    product.product_type === 'wristwatch'
+      ? 'Dial Size'
+      : product.product_type === 'bag'
+      ? 'Bag Capacity'
+      : 'Size';
+
+  const materialLabel =
+    product.product_type === 'wristwatch' ? 'Strap Material' : 'Material';
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -136,8 +159,18 @@ const ProductDetail = () => {
               onClick={() => navigate('/home')}
               className="flex items-center text-gray-600 hover:text-gray-900"
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Back to Products
             </button>
@@ -150,8 +183,8 @@ const ProductDetail = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
-          <div className="space-y-4">
-            <div className="aspect-[5/4] max-w-md mx-auto bg-white rounded-lg overflow-hidden shadow-sm">
+          <div className="space-y-4 relative">
+            <div className="aspect-[5/4] max-w-md mx-auto bg-white rounded-lg overflow-hidden shadow-sm relative">
               {product.product_images && product.product_images.length > 0 ? (
                 <img
                   src={product.product_images[selectedImageIndex]?.url}
@@ -163,10 +196,35 @@ const ProductDetail = () => {
                   }}
                 />
               ) : null}
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center" style={{ display: 'none' }}>
+
+              {/* Status Tag top right */}
+              <span
+                className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold uppercase text-white ${
+                  product.status === 'live'
+                    ? 'bg-green-600'
+                    : product.status === 'inactive'
+                    ? 'bg-gray-600'
+                    : 'bg-yellow-600'
+                }`}
+              >
+                {product.status}
+              </span>
+
+              <div
+                className="w-full h-full bg-gray-200 flex items-center justify-center"
+                style={{ display: 'none' }}
+              >
                 <div className="text-center">
-                  <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                  <svg
+                    className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   <p className="text-gray-500">Product Image</p>
                 </div>
@@ -181,7 +239,9 @@ const ProductDetail = () => {
                     key={image.image_id}
                     onClick={() => setSelectedImageIndex(index)}
                     className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${
-                      selectedImageIndex === index ? 'border-blue-500' : 'border-gray-200'
+                      selectedImageIndex === index
+                        ? 'border-blue-500'
+                        : 'border-gray-200'
                     }`}
                   >
                     <img
@@ -217,48 +277,40 @@ const ProductDetail = () => {
             {/* Condition Badge */}
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-700">Condition:</span>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                product.condition === 'new' ? 'bg-green-100 text-green-800' :
-                product.condition === 'gently_used' ? 'bg-blue-100 text-blue-800' :
-                'bg-yellow-100 text-yellow-800'
-              }`}>
-                {product.condition === 'new' ? 'New' :
-                 product.condition === 'gently_used' ? 'Gently Used' :
-                 'Worn'}
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  product.condition === 'new'
+                    ? 'bg-green-100 text-green-800'
+                    : product.condition === 'gently_used'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}
+              >
+                {product.condition === 'new'
+                  ? 'New'
+                  : product.condition === 'gently_used'
+                  ? 'Gently Used'
+                  : 'Worn'}
               </span>
             </div>
 
-            {/* Size Selection */}
-            {product.checklist_json?.size && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Select Size</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  <button
-                    onClick={() => setSelectedSize(product.checklist_json.size)}
-                    className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
-                      selectedSize === product.checklist_json.size
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    {product.checklist_json.size}
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Size, Color, Material Labels */}
+            <div className="grid grid-cols-3 gap-4 text-center text-sm font-medium text-gray-700">
+              {product.checklist_json?.size && <div>{sizeLabel}</div>}
+              {product.checklist_json?.color && <div>Color</div>}
+              {product.checklist_json?.material && <div>{materialLabel}</div>}
+            </div>
 
-            {/* Color Display */}
-            {product.checklist_json?.color && (
-              <div className="space-y-2">
-                <span className="text-sm font-medium text-gray-700">Color</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-full border border-gray-300 bg-gray-200"></div>
-                  <span className="text-sm text-gray-600 capitalize">{product.checklist_json.color}</span>
-                </div>
-              </div>
-            )}
+            {/* Size, Color, Material Values */}
+            <div className="grid grid-cols-3 gap-4 text-center mt-1 text-gray-800">
+              {product.checklist_json?.size && <div>{product.checklist_json.size}</div>}
+              {product.checklist_json?.color && (
+                <div className="capitalize">{product.checklist_json.color}</div>
+              )}
+              {product.checklist_json?.material && (
+                <div className="capitalize">{product.checklist_json.material}</div>
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="space-y-3 pt-4">
@@ -284,18 +336,6 @@ const ProductDetail = () => {
                   + Add to Cart
                 </button>
               )}
-            </div>
-
-            {/* Product Info */}
-            <div className="border-t pt-6 space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Product Type</span>
-                <span className="text-gray-900 capitalize">{product.product_type}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Status</span>
-                <span className="text-green-600 font-medium capitalize">{product.status}</span>
-              </div>
             </div>
           </div>
         </div>
