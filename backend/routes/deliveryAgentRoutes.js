@@ -1,4 +1,5 @@
 import express from 'express';
+import { authenticateAdminToken } from '../middlewares/authAdminMiddleware.js';
 import {
   deliveryAgentSignup,
   deliveryAgentLogin,
@@ -9,7 +10,8 @@ import {
 
 const router = express.Router();
 
-router.post('/signup', async (req, res) => {
+// Signup, Login can remain public or restrict signup to admin if needed
+router.post('/signup', authenticateAdminToken, async (req, res) => {
   try {
     const agentData = req.body;
     if (!agentData) {
@@ -35,6 +37,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Protect following routes with admin auth
 router.get('/', async (req, res) => {
   try {
     const agents = await getAllDeliveryAgents();
@@ -44,7 +47,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateAdminToken, async (req, res) => {
   try {
     const result = await deleteDeliveryAgent(req.params.id);
     res.json(result);
@@ -53,7 +56,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateAdminToken, async (req, res) => {
   try {
     const result = await editDeliveryAgent(req.params.id, req.body);
     res.json({ message: 'Delivery agent updated', agent: result });

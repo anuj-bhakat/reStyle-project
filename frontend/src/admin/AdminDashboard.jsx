@@ -196,7 +196,7 @@ const ViewManagers = ({ onEdit, refresh }) => {
       });
       setManagers((prev) => prev.filter((m) => m.id !== managerId));
     } catch (err) {
-      alert(`Error: ${err.message}`);
+      alert(`Error: ${err.response.data.error}`);
     }
   };
 
@@ -358,6 +358,8 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState("addManager");
 
+  const adminToken = localStorage.getItem("adminToken");
+
   const [refreshManagers, setRefreshManagers] = useState(false);
   const [refreshAgents, setRefreshAgents] = useState(false);
 
@@ -396,7 +398,6 @@ const AdminDashboard = () => {
     setManagerLoading(true);
     setManagerMsg("");
     setManagerErr("");
-    const adminToken = localStorage.getItem("adminToken");
     try {
       if (
         !managerAddForm.manager_id ||
@@ -424,7 +425,7 @@ const AdminDashboard = () => {
       setRefreshManagers((v) => !v);
       setTimeout(() => setManagerMsg(""), 3000);
     } catch (err) {
-      setManagerErr(`❌ ${err.response?.data?.message || err.message}`);
+      setManagerErr(`❌ ${err.response?.data?.error || err.message}`);
       setTimeout(() => setManagerErr(""), 3000);
     }
     setManagerLoading(false);
@@ -465,7 +466,7 @@ const AdminDashboard = () => {
       setManagerMsg("Manager updated!");
       setTimeout(() => setManagerMsg(""), 3000);
     } catch (err) {
-      setManagerErr(`❌ ${err.response?.data?.message || err.message}`);
+      setManagerErr(`❌ ${err.response?.data?.error || err.message}`);
       setTimeout(() => setManagerErr(""), 3000);
     }
     setManagerLoading(false);
@@ -480,13 +481,15 @@ const AdminDashboard = () => {
     try {
       if (!agentAddForm.agentid || !agentAddForm.email || !agentAddForm.password)
         throw new Error("Agent ID, email and password are required");
-      await axios.post("http://localhost:3000/delivery-agent/signup", agentAddForm);
+      await axios.post("http://localhost:3000/delivery-agent/signup", agentAddForm,
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
       setAgentAddForm({ agentid: "", email: "", password: "" });
       setAgentMsg("🎉 Delivery agent created!");
       setRefreshAgents((v) => !v);
       setTimeout(() => setAgentMsg(""), 3000);
     } catch (err) {
-      setAgentErr(`❌ ${err.response?.data?.message || err.message}`);
+      setAgentErr(`❌ ${err.response?.data?.error || err.message}`);
       setTimeout(() => setAgentErr(""), 3000);
     }
     setAgentLoading(false);
@@ -509,14 +512,15 @@ const AdminDashboard = () => {
         updateData.password = editingAgent.password;
       await axios.put(
         `http://localhost:3000/delivery-agent/${editingAgent.id}`,
-        updateData
+        updateData,
+        { headers: { Authorization: `Bearer ${adminToken}` } }
       );
       setEditingAgent(null);
       setRefreshAgents((v) => !v);
       setAgentMsg("Delivery agent updated!");
       setTimeout(() => setAgentMsg(""), 3000);
     } catch (err) {
-      setAgentErr(`❌ ${err.response?.data?.message || err.message}`);
+      setAgentErr(`❌ ${err.response?.data?.error || err.message}`);
       setTimeout(() => setAgentErr(""), 3000);
     }
     setAgentLoading(false);
