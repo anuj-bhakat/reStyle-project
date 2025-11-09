@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Added for navigation
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
   const [step, setStep] = useState(1); // 1 = signup, 2 = address
   const [userId, setUserId] = useState('');
   const [token, setToken] = useState('');
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -49,7 +51,7 @@ const Signup = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:3000/user/signup', {
+      const response = await axios.post(`${baseUrl}/user/signup`, {
         ...formData,
         phone: null,
       });
@@ -79,7 +81,7 @@ const Signup = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/user/${userId}/address`,
+        `${baseUrl}/user/${userId}/address`,
         { ...addressData },
         {
           headers: {

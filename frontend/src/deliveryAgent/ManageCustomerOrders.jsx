@@ -23,6 +23,7 @@ const ManageCustomerOrders = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [activeTab, setActiveTab] = useState("accept"); // accept, pending, delivered
 
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const ManageCustomerOrders = () => {
       let res;
       if (tab === "accept") {
         // Orders with status "ordered"
-        res = await axios.get("http://localhost:3000/customer_orders/status/ordered");
+        res = await axios.get(`${baseUrl}/customer_orders/status/ordered`);
         const orders = res.data || [];
         setOrders(orders);
         if (orders.length) {
@@ -64,7 +65,7 @@ const ManageCustomerOrders = () => {
           return;
         }
         // Get all orders assigned to this agent
-        res = await axios.get(`http://localhost:3000/customer_orders/agent/${deliveryAgentId}`);
+        res = await axios.get(`${baseUrl}/customer_orders/agent/${deliveryAgentId}`);
         let agentOrders = res.data || [];
 
         if (tab === "pending") {
@@ -103,7 +104,7 @@ const ManageCustomerOrders = () => {
   const fetchProductDetails = async (listingIds) => {
     if (!listingIds.length) return;
     try {
-      const res = await axios.post("http://localhost:3000/products/multiple", { listing_ids: listingIds });
+      const res = await axios.post(`${baseUrl}/products/multiple`, { listing_ids: listingIds });
       const map = {};
       res.data.forEach(prod => {
         map[prod.listing_id] = prod;
@@ -135,7 +136,7 @@ const ManageCustomerOrders = () => {
     }
 
     try {
-      await axios.put(`http://localhost:3000/customer_orders/${selectedOrderId}`, {
+      await axios.put(`${baseUrl}/customer_orders/${selectedOrderId}`, {
         ...order,
         status: "delivering",
         deliveryagent_id: deliveryAgentId,
@@ -162,7 +163,7 @@ const ManageCustomerOrders = () => {
     }
 
     try {
-      await axios.put(`http://localhost:3000/customer_orders/${selectedOrderId}`, {
+      await axios.put(`${baseUrl}/customer_orders/${selectedOrderId}`, {
         ...order,
         status: "delivered",
         payment_status: "paid",

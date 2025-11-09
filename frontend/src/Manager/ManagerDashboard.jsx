@@ -8,6 +8,7 @@ const ManagerDashboard = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   useEffect(() => {
     const token = localStorage.getItem("managerToken");
@@ -21,7 +22,7 @@ const ManagerDashboard = () => {
   const fetchPendingRequests = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:3000/products/get/draft");
+      const response = await axios.get(`${baseUrl}/products/get/draft`);
       setPendingRequests(response.data);
       setError(null);
     } catch (err) {

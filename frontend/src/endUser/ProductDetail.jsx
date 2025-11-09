@@ -4,6 +4,7 @@ import axios from 'axios';
 
 const ProductDetail = () => {
   const [searchParams] = useSearchParams();
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +37,7 @@ const ProductDetail = () => {
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:3000/products/${listingId}`);
+      const response = await axios.get(`${baseUrl}/products/${listingId}`);
       if (response.status === 200) {
         setProduct(response.data);
         setError('');

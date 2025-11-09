@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 const ReDesignedProducts = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({
@@ -47,7 +48,7 @@ const ReDesignedProducts = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "http://localhost:3000/products/get/redesigned"
+        `${baseUrl}/products/get/redesigned`
       );
       setProducts(response.data);
       setError("");

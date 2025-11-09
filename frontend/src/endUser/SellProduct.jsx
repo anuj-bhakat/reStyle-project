@@ -51,6 +51,7 @@ const SellProduct = () => {
   });
 
   const navigate = useNavigate();
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   // Image state
   const [images, setImages] = useState([]);
@@ -247,7 +248,7 @@ const SellProduct = () => {
       includedImages.forEach((img) => {
         formDataToSend.append("images", img.file);
       });
-      await axios.post("http://localhost:3000/products/", formDataToSend, {
+      await axios.post(`${baseUrl}/products/`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setSubmitSuccess(true);

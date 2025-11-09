@@ -8,6 +8,7 @@ const WarehouseRequests = () => {
   const [pickedUpProducts, setPickedUpProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   useEffect(() => {
     const token = localStorage.getItem("managerToken");
@@ -21,7 +22,7 @@ const WarehouseRequests = () => {
   const fetchPickedUpProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:3000/products/get/picked_up");
+      const response = await axios.get(`${baseUrl}/products/get/picked_up`);
       setPickedUpProducts(response.data);
       setError(null);
     } catch (err) {

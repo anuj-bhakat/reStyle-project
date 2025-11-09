@@ -9,11 +9,12 @@ function SellerProductDetails({ product, backToList }) {
   const [conditionsJson, setConditionsJson] = useState(null);
   const [loadingConditions, setLoadingConditions] = useState(true);
   const [conditionsError, setConditionsError] = useState(null);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   useEffect(() => {
     setLoadingConditions(true);
     axios
-      .get(`http://localhost:3000/pickup_requests/listing/${product.listing_id}`)
+      .get(`${baseUrl}/pickup_requests/listing/${product.listing_id}`)
       .then((response) => {
         const data = response.data;
         if (Array.isArray(data) && data.length > 0) {
@@ -251,6 +252,7 @@ export default function SellerOrderHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -269,7 +271,7 @@ export default function SellerOrderHistory() {
     }
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3000/products/history/${seller_id}`);
+      const response = await axios.get(`${baseUrl}/products/history/${seller_id}`);
       setOrders(response.data);
       setLoading(false);
     } catch {

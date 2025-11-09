@@ -7,6 +7,7 @@ const OrderSummary = () => {
   const location = useLocation();
   const token = localStorage.getItem("token");
   const userid = localStorage.getItem("userid");
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   const [userAddress, setUserAddress] = useState(null);
   const [error, setError] = useState("");
@@ -25,7 +26,7 @@ const OrderSummary = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/user/profile/", {
+        const response = await axios.get(`${baseUrl}/user/profile/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { address } = response.data.user;
@@ -85,7 +86,7 @@ const OrderSummary = () => {
         delivered_at: null,
       };
 
-      await axios.post("http://localhost:3000/customer_orders", orderData);
+      await axios.post(`${baseUrl}/customer_orders`, orderData);
 
       setSuccess(true);
 

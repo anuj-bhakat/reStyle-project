@@ -166,7 +166,8 @@ const ViewManagers = ({ onEdit, refresh }) => {
   const [managers, setManagers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const API_BASE_URL = "http://localhost:3000/managers";
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const API_BASE_URL = `${baseUrl}/managers`;
   const adminToken = localStorage.getItem("adminToken");
 
   const fetchManagers = async () => {
@@ -265,7 +266,8 @@ const ViewAgents = ({ onEdit, refresh }) => {
   const [agents, setAgents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const API_BASE_URL = "http://localhost:3000/delivery-agent";
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const API_BASE_URL = `${baseUrl}/delivery-agent`;
 
   const fetchAgents = async () => {
     setIsLoading(true);
@@ -357,6 +359,7 @@ const ViewAgents = ({ onEdit, refresh }) => {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState("addManager");
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   const adminToken = localStorage.getItem("adminToken");
 
@@ -408,7 +411,7 @@ const AdminDashboard = () => {
       )
         throw new Error("All fields are required");
       await axios.post(
-        "http://localhost:3000/managers/signup",
+        `${baseUrl}/managers/signup`,
         managerAddForm,
         {
           headers: { Authorization: `Bearer ${adminToken}` },
@@ -455,7 +458,7 @@ const AdminDashboard = () => {
       if (editingManager.password && editingManager.password.trim())
         updateData.password = editingManager.password;
       await axios.put(
-        `http://localhost:3000/managers/${editingManager.id}`,
+        `${baseUrl}/managers/${editingManager.id}`,
         updateData,
         {
           headers: { Authorization: `Bearer ${adminToken}` },
@@ -481,7 +484,7 @@ const AdminDashboard = () => {
     try {
       if (!agentAddForm.agentid || !agentAddForm.email || !agentAddForm.password)
         throw new Error("Agent ID, email and password are required");
-      await axios.post("http://localhost:3000/delivery-agent/signup", agentAddForm,
+      await axios.post(`${baseUrl}/delivery-agent/signup`, agentAddForm,
         { headers: { Authorization: `Bearer ${adminToken}` } }
       );
       setAgentAddForm({ agentid: "", email: "", password: "" });
@@ -511,7 +514,7 @@ const AdminDashboard = () => {
       if (editingAgent.password && editingAgent.password.trim())
         updateData.password = editingAgent.password;
       await axios.put(
-        `http://localhost:3000/delivery-agent/${editingAgent.id}`,
+        `${baseUrl}/delivery-agent/${editingAgent.id}`,
         updateData,
         { headers: { Authorization: `Bearer ${adminToken}` } }
       );

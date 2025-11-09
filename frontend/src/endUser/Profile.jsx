@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [activeSection, setActiveSection] = useState("profile"); // "profile" or "password"
   const [user, setUser] = useState({});
   const [editableUser, setEditableUser] = useState({
@@ -36,7 +37,7 @@ const Profile = () => {
     } else {
       const fetchUser = async () => {
         try {
-          const response = await axios.get("http://localhost:3000/user/profile", {
+          const response = await axios.get(`${baseUrl}/user/profile`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = response.data.user;
@@ -96,7 +97,7 @@ const Profile = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:3000/user/${user.id}/profile`,
+        `${baseUrl}/user/${user.id}/profile`,
         {
           ...user,
           first_name: editableUser.first_name,
@@ -159,7 +160,7 @@ const Profile = () => {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `http://localhost:3000/user/${user.id}/change-password`,
+        `${baseUrl}/user/${user.id}/change-password`,
         {
           oldPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,

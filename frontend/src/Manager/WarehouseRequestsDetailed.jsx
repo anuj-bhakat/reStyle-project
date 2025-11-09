@@ -8,6 +8,7 @@ const WarehouseRequestsDetailed = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const baseUrl = import.meta.env.VITE_BASE_URL;
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
     const listingId = location.state?.listingId;
@@ -24,7 +25,7 @@ const WarehouseRequestsDetailed = () => {
     const fetchProductDetails = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`http://localhost:3000/products/${listingId}`);
+            const response = await axios.get(`${baseUrl}/products/${listingId}`);
             if (response.status === 200) {
                 setProduct(response.data);
                 setError('');
@@ -60,7 +61,7 @@ const WarehouseRequestsDetailed = () => {
 
             // Update the product with the final price
             const updateResponse = await axios.put(
-                `http://localhost:3000/products/${listingId}`,
+                `${baseUrl}/products/${listingId}`,
                 {
                     status: 'live',
                     final_price: calculatedFinalPrice  // Set final price here
@@ -81,7 +82,7 @@ const WarehouseRequestsDetailed = () => {
     const handleSendToRedesign = async () => {
         try {
             const updateResponse = await axios.put(
-                `http://localhost:3000/products/${listingId}`,
+                `${baseUrl}/products/${listingId}`,
                 { status: 'redesigning' }
             );
 

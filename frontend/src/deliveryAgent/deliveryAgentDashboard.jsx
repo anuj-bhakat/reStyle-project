@@ -11,13 +11,14 @@ const DeliveryAgentDashboard = () => {
   const [activeSection, setActiveSection] = useState("pickup");
   const [basePrice, setBasePrice] = useState(null);
   const [productDetailsMap, setProductDetailsMap] = useState({});
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate();
   const token = localStorage.getItem("agentToken");
   const agentId = localStorage.getItem("agent_id");
 
   const loadAllPickupData = async () => {
     try {
-      const res = await axios.get(`http://localhost:3000/pickup_requests/get/${agentId}`, {
+      const res = await axios.get(`${baseUrl}/pickup_requests/get/${agentId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const requestsData = res.data || [];
@@ -26,7 +27,7 @@ const DeliveryAgentDashboard = () => {
       const productFetches = await Promise.all(
         requestsData.map((req) =>
           axios
-            .get(`http://localhost:3000/products/${req.listing_id}`, {
+            .get(`${baseUrl}/products/${req.listing_id}`, {
               headers: { Authorization: `Bearer ${token}` },
             })
             .then((res) => ({ listing_id: req.listing_id, data: res.data }))
@@ -68,12 +69,12 @@ const DeliveryAgentDashboard = () => {
   const handleReject = async (pickup_request_id, listing_id, conditions) => {
     try {
       await axios.put(
-        `http://localhost:3000/products/${listing_id}`,
+        `${baseUrl}/products/${listing_id}`,
         { status: "rejected" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await axios.put(
-        `http://localhost:3000/pickup_requests/${pickup_request_id}`,
+        `${baseUrl}/pickup_requests/${pickup_request_id}`,
         { conditions_json: conditions, status: "completed" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -87,17 +88,17 @@ const DeliveryAgentDashboard = () => {
   const handleSubmit = async (pickup_request_id, listing_id, conditions) => {
     try {
       await axios.put(
-        `http://localhost:3000/products/${listing_id}`,
+        `${baseUrl}/products/${listing_id}`,
         { status: "picked_up" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await axios.put(
-        `http://localhost:3000/pickup_requests/${pickup_request_id}`,
+        `${baseUrl}/pickup_requests/${pickup_request_id}`,
         { conditions_json: conditions, status: "completed" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const basePriceResponse = await axios.get(
-        `http://localhost:3000/products/base-price/${pickup_request_id}`,
+        `${baseUrl}/products/base-price/${pickup_request_id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setBasePrice(basePriceResponse.data.base_price);

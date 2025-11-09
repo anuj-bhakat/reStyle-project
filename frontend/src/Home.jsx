@@ -5,13 +5,14 @@ import axios from 'axios';
 const Home = () => {
   const [products, setProducts] = useState([]);
   const navigate = useNavigate();
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const [liveResponse, redesignedResponse] = await Promise.all([
-          axios.get('http://localhost:3000/products/get/live'),
-          axios.get('http://localhost:3000/products/get/redesigned'),
+          axios.get(`${baseUrl}/products/get/live`),
+          axios.get(`${baseUrl}/products/get/redesigned`),
         ]);
 
         let combined = [];

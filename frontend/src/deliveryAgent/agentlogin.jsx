@@ -7,6 +7,7 @@ const AgentLogin = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,7 +22,7 @@ const AgentLogin = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:3000/delivery-agent/login", {
+      const response = await axios.post(`${baseUrl}/delivery-agent/login`, {
         email,
         password,
       });

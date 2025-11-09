@@ -8,6 +8,8 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -20,7 +22,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/user/login", {
+      const response = await fetch(`${baseUrl}/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

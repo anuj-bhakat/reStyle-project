@@ -8,6 +8,7 @@ const ManagerLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   const navigate = useNavigate();
 
@@ -17,7 +18,7 @@ const ManagerLogin = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:3000/managers/login", {
+      const response = await axios.post(`${baseUrl}/managers/login`, {
         manager_id: managerId,
         password,
       });

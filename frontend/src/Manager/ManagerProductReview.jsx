@@ -10,6 +10,7 @@ const ManagerProductReview = () => {
   const [error, setError] = useState("");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   // Pricing form state
   const [algorithmStart, setAlgorithmStart] = useState("");
@@ -42,7 +43,7 @@ const ManagerProductReview = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:3000/products/${listingId}`
+        `${baseUrl}/products/${listingId}`
       );
       if (response.status === 200) {
         setProduct(response.data);
@@ -75,7 +76,7 @@ const ManagerProductReview = () => {
   const fetchDeliveryAgents = async () => {
     try {
       setAgentsLoading(true);
-      const response = await axios.get("http://localhost:3000/delivery-agent/");
+      const response = await axios.get(`${baseUrl}/delivery-agent/`);
       if (response.status === 200) {
         setAgents(response.data);
         setAgentsError("");
@@ -137,7 +138,7 @@ const ManagerProductReview = () => {
       };
 
       const pickupResponse = await axios.post(
-        "http://localhost:3000/pickup_requests/create",
+        `${baseUrl}/pickup_requests/create`,
         pickupPayload
       );
 
@@ -151,7 +152,7 @@ const ManagerProductReview = () => {
         };
 
         const updateResponse = await axios.put(
-          `http://localhost:3000/products/${listingId}`,
+          `${baseUrl}/products/${listingId}`,
           pricingData
         );
 

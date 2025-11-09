@@ -43,7 +43,8 @@ const ManagerManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showList, setShowList] = useState(true);
 
-  const API_BASE_URL = 'http://localhost:3000/managers';
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const API_BASE_URL = `${baseUrl}/managers`;
   const adminToken = localStorage.getItem("adminToken");
 
   useEffect(() => {

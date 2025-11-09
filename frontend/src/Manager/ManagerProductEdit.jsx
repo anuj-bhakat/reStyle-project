@@ -14,6 +14,7 @@ const ManagerProductEdit = () => {
   const [formData, setFormData] = useState({});
   const [finalPriceMultiplier, setFinalPriceMultiplier] = useState("1.6");
   const [submitting, setSubmitting] = useState(false);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   useEffect(() => {
     if (listing_id) {
@@ -24,7 +25,7 @@ const ManagerProductEdit = () => {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:3000/products/${listing_id}`);
+      const response = await axios.get(`${baseUrl}/products/${listing_id}`);
       setProduct(response.data);
       setFormData({
         brand: response.data.brand || "",
@@ -81,7 +82,7 @@ const ManagerProductEdit = () => {
         final_price: calculateFinalPrice(),
         status: "redesigned",
       };
-      await axios.put(`http://localhost:3000/products/${listing_id}`, updateData);
+      await axios.put(`${baseUrl}/products/${listing_id}`, updateData);
       alert("Product updated successfully!");
       navigate("/manager-redesign-review");
     } catch (err) {
@@ -105,7 +106,7 @@ const ManagerProductEdit = () => {
       images.forEach((image) => {
         formDataImages.append("images", image);
       });
-      await axios.put(`http://localhost:3000/products/redesign/${listing_id}`, formDataImages, {
+      await axios.put(`${baseUrl}/products/redesign/${listing_id}`, formDataImages, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("Image updated successfully!"); // Alert on successful upload

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const AdminLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,24 +26,22 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+      const response = await axios.post(`${baseUrl}/admin/login`, {
+        username,
+        password,
       });
 
-      const data = await response.json();
+      const { adminToken } = response.data;
 
-      if (data.adminToken) {
-        localStorage.setItem("adminToken", data.adminToken);
+      if (adminToken) {
+        localStorage.setItem("adminToken", adminToken);
         navigate("/admin-dashboard", { replace: true });
       } else {
         localStorage.removeItem("adminToken");
         setError("Invalid credentials.");
       }
-    } catch {
+    } catch (err) {
+      // Error handling for request failure
       setError("Login failed. Please try again.");
     } finally {
       setLoading(false);

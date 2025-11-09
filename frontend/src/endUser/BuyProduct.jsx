@@ -8,6 +8,7 @@ const BuyProduct = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [filters, setFilters] = useState({
     productType: "",
     brand: "",
@@ -58,7 +59,7 @@ const BuyProduct = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "http://localhost:3000/products/get/live"
+        `${baseUrl}/products/get/live`
       );
       setProducts(response.data);
       setError("");

@@ -4,6 +4,7 @@ import axios from "axios";
 
 const Cart = () => {
   const navigate = useNavigate();
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [cartIds, setCartIds] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -37,7 +38,7 @@ const Cart = () => {
       setLoading(true);
       try {
         const requests = cartIds.map((id) =>
-          axios.get(`http://localhost:3000/products/${id}`)
+          axios.get(`${baseUrl}/products/${id}`)
         );
         const responses = await Promise.all(requests);
         const products = responses.map((res) => res.data);

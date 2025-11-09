@@ -115,12 +115,13 @@ function CustomerOrdersPreview({ order }) {
 // Product detail preview inside order
 function ProductSummary({ listingId }) {
   const [product, setProduct] = useState(null);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [errorProduct, setErrorProduct] = useState(null);
 
   useEffect(() => {
     axios
-      .post(`http://localhost:3000/products/multiple`, {
+      .post(`${baseUrl}/products/multiple`, {
         listing_ids: [listingId],
       })
       .then((res) => {
@@ -195,6 +196,7 @@ const formatDateTime = (dateTimeStr) => {
 
 export default function CustomerOrders() {
   const [orders, setOrders] = useState(null);
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [errorOrders, setErrorOrders] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -217,7 +219,7 @@ export default function CustomerOrders() {
     }
     setLoadingOrders(true);
     axios
-      .get(`http://localhost:3000/customer_orders/customer/${customerId}`)
+      .get(`${baseUrl}/customer_orders/customer/${customerId}`)
       .then((res) => {
         // Sort orders descending by created_at
         const sortedOrders = res.data.sort(
