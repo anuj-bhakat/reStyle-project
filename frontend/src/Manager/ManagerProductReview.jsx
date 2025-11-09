@@ -98,15 +98,15 @@ const ManagerProductReview = () => {
       return false;
     }
     if (!algorithmStart || algorithmStart <= 0) {
-      setPricingError("Algorithm start price must be a positive number");
+      setPricingError("Start price must be a positive number");
       return false;
     }
     if (!algorithmEnd || algorithmEnd <= 0) {
-      setPricingError("Algorithm end price must be a positive number");
+      setPricingError("End price must be a positive number");
       return false;
     }
     if (parseFloat(algorithmStart) >= parseFloat(algorithmEnd)) {
-      setPricingError("Algorithm start price must be less than end price");
+      setPricingError("Start price must be less than end price");
       return false;
     }
     if (!selectedAgentId) {
@@ -224,10 +224,18 @@ const ManagerProductReview = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <div className="animate-spin h-12 w-12 border-b-2 border-blue-600 rounded-full mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading product details...</p>
+          <div className="relative">
+            <div className="animate-spin h-16 w-16 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="h-6 w-6 text-blue-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+          </div>
+          <p className="mt-6 text-gray-700 text-lg font-medium">Loading product details...</p>
+          <p className="mt-2 text-gray-500 text-sm">Please wait while we fetch the information</p>
         </div>
       </div>
     );
@@ -235,15 +243,24 @@ const ManagerProductReview = () => {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 text-lg mb-4">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md mx-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">Something went wrong</h2>
+          <p className="text-red-600 text-lg mb-6 font-medium">
             {error || "Product not found"}
           </p>
           <button
             onClick={() => navigate("/manager-dashboard")}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md"
           >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
             Back to Dashboard
           </button>
         </div>
@@ -258,14 +275,14 @@ const ManagerProductReview = () => {
     selectedAgentId;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-50">
+      <div className="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-18">
             <button
               onClick={() => navigate("/manager-dashboard")}
-              className="flex items-center text-gray-600 hover:text-gray-900"
+              className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200"
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -282,7 +299,7 @@ const ManagerProductReview = () => {
               </svg>
               Back to Dashboard
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Product Review
             </h1>
             <div className="w-20"></div>
@@ -290,40 +307,45 @@ const ManagerProductReview = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* --- Product Images & Info (Left Column) --- */}
-          <div className="space-y-6">
-            <div className="relative aspect-[5/4] max-w-md mx-auto bg-white rounded-lg overflow-hidden shadow-sm">
+          <div className="space-y-4">
+            <div className="relative aspect-[4/3] max-w-lg mx-auto bg-white rounded-2xl overflow-hidden shadow-xl border border-gray-100">
               {product.product_images?.length > 0 && (
                 <>
                   <img
                     src={product.product_images[selectedImageIndex]?.url}
                     alt={product.description}
-                    className="w-full h-full object-contain bg-white"
-                    style={{ maxHeight: "400px" }}
+                    className="w-full h-full object-contain bg-gradient-to-br from-gray-50 to-gray-100"
+                    style={{ maxHeight: "500px" }}
                   />
-                  <span
-                    className={`absolute top-2 left-2 px-3 py-1 text-xs text-white rounded-full ${getStatusColor(
+                  <div className="absolute top-4 left-4">
+                    <span className={`px-3 py-1.5 text-sm font-medium text-white rounded-full shadow-lg ${getStatusColor(
                       product.status
-                    )}`}
-                  >
-                    {product.status}
-                  </span>
+                    )}`}>
+                      {product.status.replace("_", " ").toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1">
+                    <span className="text-sm text-gray-600 font-medium">
+                      {selectedImageIndex + 1} / {product.product_images.length}
+                    </span>
+                  </div>
                 </>
               )}
             </div>
 
             {product.product_images?.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto justify-center">
+              <div className="flex space-x-3 overflow-x-auto justify-center pb-2">
                 {product.product_images.map((image, index) => (
                   <button
                     key={image.image_id}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 ${
+                    className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
                       selectedImageIndex === index
-                        ? "border-blue-500"
-                        : "border-gray-200"
+                        ? "border-blue-500 shadow-lg ring-2 ring-blue-200"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <img
@@ -336,97 +358,117 @@ const ManagerProductReview = () => {
               </div>
             )}
 
-            {/* Moved Product Info Here */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Product Information
-              </h2>
-              <div className="mb-4">
-                <h1 className="text-2xl font-bold">
+            {/* Product Info Card */}
+            <div className="bg-white rounded-lg shadow-md p-3 border border-gray-100">
+              <div className="flex items-center mb-2">
+                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mr-2">
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                </div>
+                <h2 className="text-sm font-bold text-gray-900">Product Information</h2>
+              </div>
+              <div className="mb-2">
+                <h1 className="text-lg font-bold text-gray-900 mb-1">
                   {product.brand} {product.product_type}
                 </h1>
-                <p className="text-gray-600">{product.description}</p>
+                <p className="text-gray-600 text-xs leading-relaxed">{product.description}</p>
               </div>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span>Condition:</span>
-                  <span className="capitalize">{product.condition}</span>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center py-1 border-b border-gray-100">
+                  <span className="text-gray-600 font-medium text-xs">Condition:</span>
+                  <span className="capitalize px-2 py-0.5 bg-gray-100 rounded-full text-xs font-medium">{product.condition.replace("_", " ")}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Created:</span>
-                  <span>{formatDate(product.created_at)}</span>
+                <div className="flex justify-between items-center py-1 border-b border-gray-100">
+                  <span className="text-gray-600 font-medium text-xs">Created:</span>
+                  <span className="text-gray-900 font-medium text-xs">{formatDate(product.created_at)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Updated:</span>
-                  <span>{formatDate(product.updated_at)}</span>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-gray-600 font-medium text-xs">Updated:</span>
+                  <span className="text-gray-900 font-medium text-xs">{formatDate(product.updated_at)}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* --- Checklist, Pricing, Delivery Agent, Submit --- */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Checklist Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Checklist Constraints
-              </h2>
-              <div className="flex mb-4 space-x-2">
+            <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+              <div className="flex items-center mb-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-2">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Checklist Constraints</h2>
+              </div>
+              <div className="flex mb-3 space-x-2">
                 <input
                   type="text"
                   placeholder="Enter constraint name"
                   value={newConstraint}
                   onChange={(e) => setNewConstraint(e.target.value)}
                   onKeyDown={handleConstraintInputKeyDown}
-                  className="flex-1 px-3 py-2 border rounded-md"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                 />
                 <button
                   onClick={handleAddConstraint}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-md text-sm"
                 >
                   + Add
                 </button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-40 overflow-y-auto">
                 {Object.entries(constraints).map(([key, value]) => (
-                  <label key={key} className="flex items-center space-x-2">
+                  <label key={key} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                     <input
                       type="checkbox"
                       checked={value}
                       onChange={() => toggleConstraint(key)}
-                      className="h-4 w-4"
+                      className="h-4 w-4 text-purple-600 rounded focus:ring-purple-500"
                     />
-                    <span className="capitalize">{key.replace(/_/g, " ")}</span>
+                    <span className="capitalize font-medium text-gray-700 text-sm">{key.replace(/_/g, " ")}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             {/* Pricing Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Set Pricing
-              </h2>
+            <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+              <div className="flex items-center mb-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mr-2">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Set Pricing</h2>
+              </div>
               {pricingError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-red-600 text-sm">{pricingError}</p>
+                <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p className="text-red-600 font-medium text-sm">{pricingError}</p>
+                  </div>
                 </div>
               )}
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label
                       htmlFor="algorithmStart"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-semibold text-gray-700 mb-1"
                     >
-                      Algorithm Start (₹)
+                      Start (₹)
                     </label>
                     <input
                       type="number"
                       id="algorithmStart"
                       value={algorithmStart}
                       onChange={(e) => setAlgorithmStart(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="Start price"
                       min="1"
                       step="1"
@@ -435,16 +477,16 @@ const ManagerProductReview = () => {
                   <div>
                     <label
                       htmlFor="algorithmEnd"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-semibold text-gray-700 mb-1"
                     >
-                      Algorithm End (₹)
+                      End (₹)
                     </label>
                     <input
                       type="number"
                       id="algorithmEnd"
                       value={algorithmEnd}
                       onChange={(e) => setAlgorithmEnd(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       placeholder="End price"
                       min="1"
                       step="1"
@@ -454,13 +496,24 @@ const ManagerProductReview = () => {
 
                 {/* Delivery Agent Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Select Delivery Agent
                   </label>
-                  {agentsLoading && <p>Loading agents...</p>}
-                  {agentsError && <p className="text-red-600">{agentsError}</p>}
+                  {agentsLoading && (
+                    <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                      <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
+                      <span className="text-gray-600 text-sm">Loading agents...</span>
+                    </div>
+                  )}
+                  {agentsError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-600 font-medium text-sm">{agentsError}</p>
+                    </div>
+                  )}
                   {!agentsLoading && !agentsError && agents.length === 0 && (
-                    <p>No delivery agents available.</p>
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-yellow-800 font-medium text-sm">No delivery agents available.</p>
+                    </div>
                   )}
                   {!agentsLoading && !agentsError && agents.length > 0 && (
                     <DropdownAgentSelector
@@ -473,26 +526,50 @@ const ManagerProductReview = () => {
 
                 {/* Pricing Preview */}
                 {(algorithmStart || algorithmEnd) && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">
+                  <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                    <h4 className="text-sm font-semibold text-blue-900 mb-1 flex items-center">
+                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
                       Pricing Preview
                     </h4>
-                    <div className="text-sm text-blue-800">
-                      Algorithm Range: ₹{algorithmStart} - ₹{algorithmEnd}
+                    <div className="text-sm text-blue-800 font-medium">
+                      Range: <span className="text-base">₹{algorithmStart}</span> - <span className="text-base">₹{algorithmEnd}</span>
                     </div>
+                    {algorithmStart && algorithmEnd && (
+                      <div className="text-xs text-blue-600 mt-1">
+                        Difference: ₹{Math.abs(algorithmEnd - algorithmStart)}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             </div>
 
             {/* Approve Button */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-white rounded-lg shadow-md p-3 border border-gray-100">
               <button
                 onClick={handleApproveAndSend}
                 disabled={submitting || !isFormReady}
-                className="w-full bg-green-600 text-white py-3 rounded-md font-medium hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className={`w-full py-2.5 rounded-lg font-medium transition-all duration-300 shadow-md text-sm ${
+                  submitting || !isFormReady
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
+                }`}
               >
-                {submitting ? "Approving..." : "Approve & Send"}
+                {submitting ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                    Processing...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Approve & Send
+                  </div>
+                )}
               </button>
             </div>
           </div>
@@ -511,20 +588,21 @@ const DropdownAgentSelector = ({
   const [isOpen, setIsOpen] = useState(false);
   const toggleDropdown = () => setIsOpen(!isOpen);
 
+  const selectedAgent = selectedAgentId
+    ? agents.find((agent) => agent.deliveryagent_id === selectedAgentId)
+    : null;
+
   return (
-    <div className="relative w-full max-w-xs">
+    <div className="relative w-full">
       <button
         type="button"
         onClick={toggleDropdown}
-        className="w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+        className="w-full bg-white border border-gray-200 rounded-lg shadow-sm pl-4 pr-10 py-3 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent hover:border-gray-300 transition-colors"
       >
-        <span className="block truncate">
-          {selectedAgentId
-            ? agents.find((agent) => agent.deliveryagent_id === selectedAgentId)
-                ?.agentid || "Select delivery agent"
-            : "Select delivery agent"}
+        <span className={`block truncate font-medium ${selectedAgent ? "text-gray-900" : "text-gray-500"}`}>
+          {selectedAgent ? selectedAgent.agentid : "Select delivery agent"}
         </span>
-        <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+        <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <svg
             className={`h-5 w-5 text-gray-400 transform transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
@@ -542,7 +620,7 @@ const DropdownAgentSelector = ({
       </button>
 
       {isOpen && (
-        <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto text-sm">
+        <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-auto">
           {agents.map((agent) => (
             <li
               key={agent.deliveryagent_id}
@@ -550,11 +628,18 @@ const DropdownAgentSelector = ({
                 setSelectedAgentId(agent.deliveryagent_id);
                 setIsOpen(false);
               }}
-              className={`cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-blue-100 ${
-                selectedAgentId === agent.deliveryagent_id ? "bg-blue-50" : ""
+              className={`cursor-pointer select-none relative py-3 pl-4 pr-9 hover:bg-indigo-50 transition-colors ${
+                selectedAgentId === agent.deliveryagent_id ? "bg-indigo-50 text-indigo-700" : "text-gray-700"
               }`}
             >
-              {agent.agentid}
+              <span className="font-medium">{agent.agentid}</span>
+              {selectedAgentId === agent.deliveryagent_id && (
+                <span className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg className="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </span>
+              )}
             </li>
           ))}
         </ul>
