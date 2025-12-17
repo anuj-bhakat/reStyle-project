@@ -102,7 +102,7 @@ const DeliveryAgent = () => {
       setShowList(true);
       setMessage('🎉 Delivery agent created successfully!');
       setTimeout(() => setMessage(''), 3000);
-      
+
       // Auto-refresh the agent list
       fetchAgents();
     } catch (err) {
@@ -152,7 +152,7 @@ const DeliveryAgent = () => {
       setShowList(true);
       setMessage('✅ Delivery agent updated successfully!');
       setTimeout(() => setMessage(''), 3000);
-      
+
       // Auto-refresh the agent list
       fetchAgents();
     } catch (err) {
@@ -178,7 +178,7 @@ const DeliveryAgent = () => {
 
       setMessage('✅ Delivery agent deleted successfully!');
       setTimeout(() => setMessage(''), 3000);
-      
+
       // Auto-refresh the agent list
       fetchAgents();
     } catch (err) {
@@ -229,17 +229,15 @@ const DeliveryAgent = () => {
             <div className="flex space-x-4">
               <button
                 onClick={showAddFormHandler}
-                className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${
-                  showAddForm ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${showAddForm ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 Add Agent
               </button>
               <button
                 onClick={showListHandler}
-                className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${
-                  showList ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${showList ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 View Agents
               </button>
@@ -316,7 +314,7 @@ const DeliveryAgent = () => {
                 {isLoadingAgents ? 'Refreshing...' : 'Refresh'}
               </button>
             </div>
-            
+
             {isLoadingAgents ? (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

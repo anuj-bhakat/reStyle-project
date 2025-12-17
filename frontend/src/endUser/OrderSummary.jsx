@@ -88,7 +88,7 @@ const OrderSummary = () => {
       };
 
       const response = await axios.post(`${baseUrl}/customer_orders`, orderData);
-      
+
       const generatedOrderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
       setOrderId(generatedOrderId);
 
@@ -208,17 +208,17 @@ const OrderSummary = () => {
               <span className="text-white text-sm">🎉</span>
             </div>
           </div>
-          
+
           <h2 className="text-2xl font-bold text-gray-800 mb-3">Order Confirmed!</h2>
           <p className="text-gray-600 mb-4">Thank you for your purchase</p>
-          
+
           {orderId && (
             <div className="bg-gray-50 p-3 rounded-lg mb-4">
               <p className="text-sm text-gray-500 mb-1">Order ID</p>
               <p className="text-lg font-bold text-indigo-600 font-mono">{orderId}</p>
             </div>
           )}
-          
+
           <div className="space-y-2 mb-6 text-sm text-gray-600">
             <div className="flex items-center justify-center space-x-2">
               <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -233,7 +233,7 @@ const OrderSummary = () => {
               <span>Payment processing initiated</span>
             </div>
           </div>
-          
+
           <p className="text-sm text-gray-500 mb-4">Redirecting to home page in 5 seconds...</p>
           <button
             onClick={() => navigate("/home")}
@@ -280,7 +280,7 @@ const OrderSummary = () => {
                   <span>Edit</span>
                 </button>
               </div>
-              
+
               <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-indigo-500">
                 {userAddress ? (
                   <div className="space-y-1">
@@ -311,7 +311,7 @@ const OrderSummary = () => {
                 </svg>
                 Order Items ({products.length})
               </h2>
-              
+
               <div className="space-y-4">
                 {products.map((product) => (
                   <div
@@ -339,7 +339,7 @@ const OrderSummary = () => {
                         {product.brand} {product.product_type}
                       </h3>
                       <p className="text-gray-600 text-sm mb-2 line-clamp-1">{product.description}</p>
-                      
+
                       {/* Product Attributes */}
                       <div className="flex flex-wrap gap-1">
                         {product.checklist_json?.size && (
@@ -376,14 +376,14 @@ const OrderSummary = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
               <h2 className="text-lg font-bold text-gray-900 mb-4">Payment Summary</h2>
-              
+
               {/* Price Breakdown */}
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-gray-600 text-sm">Subtotal ({products.length} items)</span>
                   <span className="font-semibold text-gray-900 text-sm">{formatINR(finalPrice - deliveryCharge)}</span>
                 </div>
-                
+
                 <div className="flex justify-between items-center py-2 border-b border-gray-200">
                   <span className="text-gray-600 text-sm">Delivery Charges</span>
                   <div className="text-right">
@@ -393,7 +393,7 @@ const OrderSummary = () => {
                     ) : null}
                   </div>
                 </div>
-                
+
                 <div className="flex justify-between items-center py-3 text-lg font-bold text-gray-900 border-t-2 border-indigo-200">
                   <span>Total Amount</span>
                   <span className="text-indigo-600">{formatINR(finalPrice)}</span>
@@ -403,12 +403,11 @@ const OrderSummary = () => {
               {/* Checkout Button */}
               <button
                 onClick={handleCheckout}
-                disabled={loading || success}
-                className={`w-full py-3 px-4 rounded-lg font-semibold text-base transition-all duration-300 ${
-                  loading || success
+                disabled={loading || success || localStorage.getItem('isGuest') === 'true'}
+                className={`w-full py-3 px-4 rounded-lg font-semibold text-base transition-all duration-300 ${loading || success || localStorage.getItem('isGuest') === 'true'
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 shadow-md hover:shadow-lg'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center space-x-2">
                   {loading ? (
@@ -421,14 +420,25 @@ const OrderSummary = () => {
                     </>
                   ) : (
                     <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>Place Order</span>
+                      {localStorage.getItem('isGuest') === 'true' ? (
+                        <span>Sign up to Place Order</span>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>Place Order</span>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
               </button>
+              {localStorage.getItem('isGuest') === 'true' && (
+                <div className="mt-2 text-center text-xs text-amber-600 font-medium bg-amber-50 p-2 rounded">
+                  Guest accounts cannot place orders. Please create a full account to purchase.
+                </div>
+              )}
 
               <p className="text-center text-xs text-gray-500 mt-3">
                 By placing this order, you agree to our Terms of Service

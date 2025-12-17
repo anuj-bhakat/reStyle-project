@@ -78,6 +78,48 @@ export const deliveryAgentLogin = async (email, password) => {
   };
 };
 
+// Guest Login
+export const guestDeliveryAgentLogin = async () => {
+  const guestAgentEmail = process.env.GUEST_DELIVERY_AGENT_EMAIL;
+
+  if (!guestAgentEmail) {
+    console.error('GUEST_DELIVERY_AGENT_ID is missing in .env');
+    throw new Error('Guest delivery agent login is not configured');
+  }
+
+  const { data, error } = await supabase
+    .from('delivery_agents')
+    .select('deliveryagent_id, email, agentid')
+    .eq('email', guestAgentEmail)
+    .single();
+
+  if (error) {
+    console.error('Supabase Error finding guest agent:', error);
+  }
+
+  if (!data) {
+    throw new Error('Guest delivery agent user not found');
+  }
+
+  // Create JWT payload with isGuest flag
+  const payload = {
+    deliveryagent_id: data.deliveryagent_id,
+    email: data.email,
+    agentid: data.agentid,
+    isGuest: true
+  };
+
+  const token = jwt.sign(payload, JWT_AGENT_SECRET, { expiresIn: TOKEN_EXPIRY });
+
+  return {
+    deliveryagent_id: data.deliveryagent_id,
+    email: data.email,
+    agentid: data.agentid,
+    deliveryAgentToken: token,
+    isGuest: true
+  };
+};
+
 // Get all delivery agents with lowercase agentid
 export const getAllDeliveryAgents = async () => {
   const { data, error } = await supabase

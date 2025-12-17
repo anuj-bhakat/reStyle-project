@@ -45,6 +45,28 @@ export const adminLogin = async (username, password) => {
   return data; // return admin record for token generation
 };
 
+export const guestAdminLogin = async () => {
+  const guestUsername = process.env.GUEST_ADMIN_USERNAME;
+
+  if (!guestUsername) {
+    throw new Error('Guest admin login is not configured');
+  }
+
+  const { data, error } = await supabase
+    .from('admins')
+    .select('*')
+    .eq('username', guestUsername)
+    .single();
+
+  if (error || !data) {
+    throw new Error('Guest admin user not found');
+  }
+
+  return { ...data, isGuest: true };
+};
+
+
+
 export const updateAdmin = async (admin_id, updateData) => {
   const updates = {};
 

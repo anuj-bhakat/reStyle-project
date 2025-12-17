@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import PickupRequestDetails from "./PickupRequestDetails";
 import ManageCustomerOrders from "./ManageCustomerOrders";
+import AgentNavbar from "./AgentNavbar";
 
 const DeliveryAgentDashboard = () => {
   const [requests, setRequests] = useState([]);
@@ -117,101 +118,23 @@ const DeliveryAgentDashboard = () => {
     }
   };
 
+  const handleTabChange = (tabId) => {
+    if (activeSection !== tabId) {
+      setSelected(null);
+      setActiveSection(tabId);
+      if (tabId === "pickup" || tabId === "history") {
+        loadAllPickupData();
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
-      <header className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 shadow-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <div className="flex justify-between items-center">
-            <div className="text-white">
-              <h1 className="text-xl font-bold">Delivery Agent Dashboard</h1>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg"
-            >
-              Logout
-            </button>
-          </div>
-          
-          {/* Navigation Buttons */}
-          <div className="flex justify-center gap-2 flex-wrap mt-3">
-            <button
-              onClick={() => {
-                if (activeSection !== "pickup") {
-                  setSelected(null);
-                  setActiveSection("pickup");
-                  loadAllPickupData();
-                }
-              }}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 relative ${
-                activeSection === "pickup"
-                  ? "bg-white text-blue-700 shadow-lg"
-                  : "bg-blue-500/20 text-white hover:bg-blue-500/30 backdrop-blur-sm border border-blue-400/30"
-              }`}
-            >
-              {loading && activeSection === "pickup" && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full">
-                  <div className="w-full h-full bg-green-400 rounded-full animate-ping"></div>
-                </div>
-              )}
-              <span className="flex items-center space-x-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                <span className="text-sm">Pickup Requests</span>
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                if (activeSection !== "history") {
-                  setSelected(null);
-                  setActiveSection("history");
-                  loadAllPickupData();
-                }
-              }}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 relative ${
-                activeSection === "history"
-                  ? "bg-white text-blue-700 shadow-lg"
-                  : "bg-blue-500/20 text-white hover:bg-blue-500/30 backdrop-blur-sm border border-blue-400/30"
-              }`}
-            >
-              {loading && activeSection === "history" && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full">
-                  <div className="w-full h-full bg-green-400 rounded-full animate-ping"></div>
-                </div>
-              )}
-              <span className="flex items-center space-x-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm">History</span>
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                if (activeSection !== "delivery") {
-                  setSelected(null);
-                  setActiveSection("delivery");
-                  // Usually ManageCustomerOrders handles its own fetching
-                }
-              }}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                activeSection === "delivery"
-                  ? "bg-white text-blue-700 shadow-lg"
-                  : "bg-blue-500/20 text-white hover:bg-blue-500/30 backdrop-blur-sm border border-blue-400/30"
-              }`}
-            >
-              <span className="flex items-center space-x-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                <span className="text-sm">Delivery Requests</span>
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <AgentNavbar
+        activeTab={activeSection}
+        onTabChange={handleTabChange}
+        onLogout={handleLogout}
+      />
 
       {/* Main Content */}
       <main className="w-full max-w-7xl px-6 py-8">
@@ -289,64 +212,111 @@ const DeliveryAgentDashboard = () => {
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>;
-                  
+
                   return (
                     <div
                       key={req.pickup_request_id}
                       onClick={() => setSelected(req)}
-                      className={`bg-white rounded-2xl shadow-lg border border-gray-100 p-6 cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:border-blue-200 group max-w-xs min-w-[280px] ${
-                        activeSection === "history"
-                          ? "max-w-[250px] min-w-[200px]"
-                          : "w-full"
-                      }`}
+                      className={`relative bg-white rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all duration-200 group overflow-hidden
+                        ${activeSection === "history"
+                          ? "w-full flex flex-row items-center h-28 hover:border-blue-200"
+                          : "flex flex-col p-4 hover:scale-105 hover:border-blue-200 max-w-[18rem] min-w-[240px]"
+                        }`}
                     >
-                      <div className="relative mb-4">
-                        <span className={`absolute top-0 left-0 ${statusColor} text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1 z-10`}>
-                          {statusIcon}
-                          <span className="capitalize">{req.status}</span>
-                        </span>
-                        <div className="mt-8">
-                          {primaryImage ? (
-                            <img
-                              src={primaryImage}
-                              alt="Product"
-                              className={`rounded-xl shadow-md mx-auto mb-4 group-hover:shadow-lg transition-shadow duration-300 ${
-                                activeSection === "history" ? "w-1/2" : "w-full max-w-[200px] h-48 object-cover"
-                              }`}
-                            />
-                          ) : (
-                            <div className={`bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center mb-4 ${
-                              activeSection === "history" ? "w-1/2 h-24" : "w-full h-48"
-                            }`}>
-                              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {activeSection === "history" ? (
+                        // HISTORY VIEW (Compact Horizontal)
+                        <>
+                          {/* Status Strip */}
+                          <div className={`absolute left-0 top-0 bottom-0 w-1 ${statusColor}`}></div>
+
+                          {/* Image Section */}
+                          <div className="w-28 h-full flex-shrink-0 bg-gray-50 flex items-center justify-center border-r border-gray-50">
+                            {primaryImage ? (
+                              <img
+                                src={primaryImage}
+                                alt="Product"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
+                            )}
+                          </div>
+
+                          {/* Content Section */}
+                          <div className="flex-1 px-4 py-2 flex items-center justify-between">
+                            <div className="flex flex-col">
+                              <h3 className="font-bold text-gray-800 text-base group-hover:text-blue-600 transition-colors">
+                                {product?.brand || "Brand Unknown"}
+                              </h3>
+                              <p className="text-gray-500 text-xs capitalize mt-0.5">
+                                {product?.product_type || "Unknown Type"}
+                              </p>
+                              <div className="flex items-center space-x-2 mt-2 text-xs text-gray-400">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>{new Date(req.created_at).toLocaleDateString()}</span>
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-center space-y-2">
-                        <div className="font-bold text-lg text-gray-800 group-hover:text-blue-600 transition-colors duration-200">
-                          {product?.brand || "Brand Unknown"}
-                        </div>
-                        <div className="text-gray-600 text-sm capitalize font-medium">
-                          {product?.product_type || "Unknown Type"}
-                        </div>
-                        <div className="text-xs text-gray-500 bg-gray-50 rounded-lg py-2 px-3 mt-3">
-                          <div className="flex items-center justify-center space-x-1">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="font-medium">Created:</span>
-                            <span>{new Date(req.created_at).toLocaleDateString()}</span>
+
+                            {/* Chevron / Action */}
+                            <div className="border border-gray-100 rounded-full p-2 text-gray-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-colors">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
                           </div>
-                        </div>
-                        <div className="pt-2">
-                          <div className="text-blue-600 text-xs font-semibold bg-blue-50 rounded-full py-1 px-3 inline-block">
-                            Click to view details
+                        </>
+                      ) : (
+                        // ACTIVE REQUESTS VIEW (Original Vertical Card)
+                        <>
+                          <div className="relative mb-4 w-full">
+                            <span className={`absolute top-0 left-0 ${statusColor} text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1 z-10`}>
+                              {statusIcon}
+                              <span className="capitalize">{req.status}</span>
+                            </span>
+                            <div className="mt-8">
+                              {primaryImage ? (
+                                <img
+                                  src={primaryImage}
+                                  alt="Product"
+                                  className="rounded-xl shadow-md mx-auto mb-4 group-hover:shadow-lg transition-shadow duration-300 w-full max-w-[200px] h-40 object-cover"
+                                />
+                              ) : (
+                                <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center mb-4 w-full h-40">
+                                  <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                          <div className="text-center space-y-2 w-full">
+                            <div className="font-bold text-lg text-gray-800 group-hover:text-blue-600 transition-colors duration-200">
+                              {product?.brand || "Brand Unknown"}
+                            </div>
+                            <div className="text-gray-600 text-sm capitalize font-medium">
+                              {product?.product_type || "Unknown Type"}
+                            </div>
+                            <div className="text-xs text-gray-500 bg-gray-50 rounded-lg py-2 px-3 mt-3 w-full">
+                              <div className="flex items-center justify-center space-x-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span className="font-medium">Created:</span>
+                                <span>{new Date(req.created_at).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <div className="pt-2">
+                              <div className="text-blue-600 text-xs font-semibold bg-blue-50 rounded-full py-1 px-3 inline-block">
+                                Click to view details
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   );
                 })}

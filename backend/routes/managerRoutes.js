@@ -7,6 +7,7 @@ import {
   editManagerController,
   deleteManagerController,
   getAllManagersController,
+  guestLoginManagerController,
 } from '../controllers/managerController.js';
 
 const router = express.Router();
@@ -15,10 +16,11 @@ const router = express.Router();
 router.get('/', authenticateAdminToken, getAllManagersController);
 
 // Signup protected by admin auth
-router.post('/signup',authenticateAdminToken, signupManagerController);
+router.post('/signup', authenticateAdminToken, signupManagerController);
 
 // Login is public
 router.post('/login', loginManagerController);
+router.post('/guest-login', guestLoginManagerController);
 
 // Protect edit and delete by manager auth middleware
 router.put('/:id', authenticateAdminToken, editManagerController);

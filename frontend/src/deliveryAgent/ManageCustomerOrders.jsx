@@ -28,6 +28,7 @@ const ManageCustomerOrders = () => {
 
   const navigate = useNavigate();
   const deliveryAgentId = localStorage.getItem("agent_id");
+  const isGuest = localStorage.getItem("isGuest") === "true";
 
   useEffect(() => {
     fetchOrdersByTab(activeTab);
@@ -225,9 +226,8 @@ const ManageCustomerOrders = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-full text-sm font-semibold ${
-              activeTab === tab ? "bg-indigo-600 text-white shadow-md" : "bg-gray-200 text-gray-700 hover:bg-indigo-200"
-            }`}
+            className={`px-5 py-2 rounded-full text-sm font-semibold ${activeTab === tab ? "bg-indigo-600 text-white shadow-md" : "bg-gray-200 text-gray-700 hover:bg-indigo-200"
+              }`}
           >
             {tab === "accept" ? "Accept Requests" : (tab === "pending" ? "Pending Deliveries" : "Deliveries")}
           </button>
@@ -248,21 +248,19 @@ const ManageCustomerOrders = () => {
                 onKeyDown={e => (e.key === "Enter" || e.key === " " ? handleSelect(order.id) : null)}
                 tabIndex={0}
                 role="button"
-                className={`cursor-pointer border rounded-xl shadow-sm p-6 bg-white transition transform ${
-                  selectedOrderId === order.id ? "border-indigo-500 shadow-lg scale-105" : "border-gray-300"
-                } hover:shadow-lg`}
+                className={`cursor-pointer border rounded-xl shadow-sm p-6 bg-white transition transform ${selectedOrderId === order.id ? "border-indigo-500 shadow-lg scale-105" : "border-gray-300"
+                  } hover:shadow-lg`}
               >
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-semibold text-indigo-700 truncate">{order.order_id}</h2>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    order.status === "delivered"
-                      ? "bg-green-100 text-green-800"
-                      : order.status === "delivering"
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${order.status === "delivered"
+                    ? "bg-green-100 text-green-800"
+                    : order.status === "delivering"
                       ? "bg-yellow-100 text-yellow-800"
                       : order.status === "ordered"
-                      ? "bg-indigo-100 text-indigo-800"
-                      : "bg-gray-100 text-gray-600"
-                  } capitalize`}>{order.status}</span>
+                        ? "bg-indigo-100 text-indigo-800"
+                        : "bg-gray-100 text-gray-600"
+                    } capitalize`}>{order.status}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1 text-gray-700">
                   <span>Ordered At:</span>
@@ -274,13 +272,12 @@ const ManageCustomerOrders = () => {
                 </div>
                 <div className="flex justify-between text-sm font-semibold">
                   <span>Payment Status:</span>
-                  <span className={`capitalize ${
-                    order.payment_status === "paid"
-                      ? "text-green-600"
-                      : order.payment_status === "pending"
+                  <span className={`capitalize ${order.payment_status === "paid"
+                    ? "text-green-600"
+                    : order.payment_status === "pending"
                       ? "text-yellow-600"
                       : "text-red-600"
-                  }`}>{order.payment_status}</span>
+                    }`}>{order.payment_status}</span>
                 </div>
               </div>
             ))}
@@ -297,13 +294,14 @@ const ManageCustomerOrders = () => {
           updating={updating}
           error={error}
           activeTab={activeTab}
+          isGuest={isGuest}
         />
       )}
     </>
   );
 };
 
-const OrderDetailsModal = ({ order, productDetails, onClose, onUpdate, updating, error, activeTab }) => {
+const OrderDetailsModal = ({ order, productDetails, onClose, onUpdate, updating, error, activeTab, isGuest }) => {
   if (!order) return null;
 
   const productIds = Object.keys(order.products || {});
@@ -338,11 +336,10 @@ const OrderDetailsModal = ({ order, productDetails, onClose, onUpdate, updating,
             <div>{formatDate(order.order_datetime)}</div>
 
             <div className="font-semibold">Payment Status :</div>
-            <div className={`capitalize font-semibold ${
-              order.payment_status === "paid" ? "text-green-600" : 
+            <div className={`capitalize font-semibold ${order.payment_status === "paid" ? "text-green-600" :
               order.payment_status === "pending" ? "text-yellow-600" :
-              "text-red-600"
-            }`}>{order.payment_status}</div>
+                "text-red-600"
+              }`}>{order.payment_status}</div>
 
             <div className="font-semibold">Total :</div>
             <div className="text-indigo-900 font-semibold text-lg text-right">₹{order.total_price.toLocaleString()}</div>
@@ -366,7 +363,7 @@ const OrderDetailsModal = ({ order, productDetails, onClose, onUpdate, updating,
                       <h3 className="text-indigo-700 font-semibold text-xl truncate">{`${product.brand} ${product.product_type.charAt(0).toUpperCase() + product.product_type.slice(1)}`}</h3>
                       <p className="text-gray-600 truncate">{product.description}</p>
                       <div className="mt-2 max-w-xs flex flex-wrap gap-2 text-xs text-gray-700">
-                        {product.checklist_json && Object.entries(product.checklist_json).map(([k,v]) => (
+                        {product.checklist_json && Object.entries(product.checklist_json).map(([k, v]) => (
                           <span key={k} className="bg-indigo-100 px-2 py-1 rounded">{`${k.replace("_", " ")}: ${v}`}</span>
                         ))}
                       </div>
@@ -384,8 +381,9 @@ const OrderDetailsModal = ({ order, productDetails, onClose, onUpdate, updating,
             <button onClick={onClose} className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-100">Close</button>
             <button
               onClick={onUpdate}
-              disabled={updating || (activeTab === "pending" && order.status === "delivered") || (activeTab === "delivered")}
-              className={`px-6 py-2 rounded font-semibold text-white transition ${updating || (activeTab === "pending" && order.status === "delivered") || (activeTab === "delivered") ? "bg-gray-400 cursor-not-allowed" : activeTab === "accept" ? "bg-yellow-600 hover:bg-yellow-700" : "bg-green-600 hover:bg-green-700"}`}
+              disabled={updating || (activeTab === "pending" && order.status === "delivered") || (activeTab === "delivered") || isGuest}
+              title={isGuest ? "Action disabled in Guest Mode" : ""}
+              className={`px-6 py-2 rounded font-semibold text-white transition ${updating || (activeTab === "pending" && order.status === "delivered") || (activeTab === "delivered") || isGuest ? "bg-gray-400 cursor-not-allowed" : activeTab === "accept" ? "bg-yellow-600 hover:bg-yellow-700" : "bg-green-600 hover:bg-green-700"}`}
             >
               {updating ? "Processing..." : getActionButtonText(activeTab)}
             </button>

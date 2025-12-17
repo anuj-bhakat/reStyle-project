@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import ManagerNavbar from "./ManagerNavbar";
 
 const ManagerRedesignReview = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const baseUrl = import.meta.env.VITE_BASE_URL;
+  const isGuest = localStorage.getItem('isGuest') === 'true';
 
   useEffect(() => {
     const token = localStorage.getItem("managerToken");
@@ -51,13 +52,6 @@ const ManagerRedesignReview = () => {
     });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("managerToken");
-    navigate("/manager-login", { replace: true });
-  };
-
-  const isActive = (path) => location.pathname.startsWith(path);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -88,50 +82,7 @@ const ManagerRedesignReview = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-900">Manager Dashboard</h1>
-          <div className="space-x-2 sm:space-x-4">
-            <button
-              onClick={() => navigate("/manager-dashboard")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-                isActive("/manager-dashboard")
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              Pending Requests
-            </button>
-            <button
-              onClick={() => navigate("/warehouse-reviews")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-                isActive("/pending-reviews")
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              Warehouse Requests
-            </button>
-            <button
-              onClick={() => navigate("/manager-redesign-review")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-                isActive("/manager-redesign-review")
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              Redesign Review
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
+      <ManagerNavbar />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-10">
@@ -182,9 +133,7 @@ const ManagerRedesignReview = () => {
 
                   <p className="text-xs text-gray-600 line-clamp-2 mb-3">{product.description}</p>
 
-                  <div className="text-[11px] text-gray-600 font-medium mb-3">
-                    Base Price: {formatPrice(product.base_price)}
-                  </div>
+
 
                   {product.checklist_json && (
                     <div className="flex flex-wrap gap-1 text-[11px] text-gray-700 mb-3">
@@ -200,14 +149,16 @@ const ManagerRedesignReview = () => {
                     </div>
                   )}
 
-                  <div className="text-[11px] text-gray-500 mb-3">
-                    <div>Created: {formatDate(product.created_at)}</div>
-                    <div>Updated: {formatDate(product.updated_at)}</div>
-                  </div>
+
 
                   <button
                     onClick={() => handleEditProduct(product.listing_id)}
-                    className="mt-auto w-full bg-blue-600 text-white text-sm py-2 rounded-md hover:bg-blue-700 transition shadow"
+                    disabled={isGuest}
+                    title={isGuest ? "Action disabled in Guest Mode" : ""}
+                    className={`mt-auto w-full text-white text-sm py-2 rounded-md transition shadow ${isGuest
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700"
+                      }`}
                   >
                     Edit & Redesign
                   </button>

@@ -31,7 +31,7 @@ const Profile = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
       navigate('/login');
     } else {
@@ -41,7 +41,7 @@ const Profile = () => {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = response.data.user;
-          
+
           setUser(data);
           setEditableUser({
             first_name: data.first_name || "",
@@ -181,6 +181,63 @@ const Profile = () => {
     }
   };
 
+  const isGuest = localStorage.getItem('isGuest') === 'true';
+
+  if (isGuest) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-12 text-center">
+              <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-2">Welcome, Guest!</h1>
+              <p className="text-indigo-100 text-lg">You're exploring reStyle in Guest Mode</p>
+            </div>
+
+            <div className="p-8 md:p-12 text-center">
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Want to do more?</h2>
+                <p className="text-gray-600 mb-6 max-w-lg mx-auto">
+                  Create a full account to unlock all features including placing orders, selling items, and saving your preferences.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => navigate('/signup')}
+                    className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-indigo-200"
+                  >
+                    Create Account
+                  </button>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="px-8 py-3 bg-white text-indigo-600 border-2 border-indigo-100 font-semibold rounded-xl hover:bg-indigo-50 transition-colors"
+                  >
+                    Log In
+                  </button>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-8">
+                <p className="text-sm text-gray-500">
+                  Currently browsing as a guest. <button onClick={() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userid');
+                    localStorage.removeItem('isGuest');
+                    navigate('/');
+                  }} className="text-indigo-600 font-medium hover:underline">Exit Guest Mode</button>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const inputClass = "w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition sm:text-base";
   const labelClass = "block text-sm font-semibold text-gray-700 mb-2";
   const cardClass = "bg-white rounded-2xl shadow-xl p-8";
@@ -212,7 +269,7 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-            
+
             <h3 className="text-lg font-bold text-gray-900 mb-1">
               {user.first_name} {user.last_name}
             </h3>
@@ -226,11 +283,10 @@ const Profile = () => {
           <div className="flex mb-8 bg-gray-100 rounded-xl p-1">
             <button
               onClick={() => setActiveSection("profile")}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
-                activeSection === "profile"
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${activeSection === "profile"
                   ? "bg-white text-indigo-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
-              }`}
+                }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -239,11 +295,10 @@ const Profile = () => {
             </button>
             <button
               onClick={() => setActiveSection("password")}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
-                activeSection === "password"
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${activeSection === "password"
                   ? "bg-white text-indigo-600 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
-              }`}
+                }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -460,11 +515,10 @@ const Profile = () => {
                   <button
                     type="submit"
                     disabled={profileLoading}
-                    className={`w-full md:w-auto flex items-center justify-center px-8 py-3 rounded-xl font-semibold text-base transition-all duration-300 ${
-                      profileLoading
+                    className={`w-full md:w-auto flex items-center justify-center px-8 py-3 rounded-xl font-semibold text-base transition-all duration-300 ${profileLoading
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 shadow-lg hover:shadow-xl'
-                    }`}
+                      }`}
                   >
                     {profileLoading ? (
                       <>
@@ -517,7 +571,7 @@ const Profile = () => {
                     </svg>
                     Change Password
                   </h3>
-                  
+
                   <div className="space-y-6">
                     <div>
                       <label className={labelClass}>Current Password *</label>
@@ -584,11 +638,10 @@ const Profile = () => {
                   <button
                     type="submit"
                     disabled={passwordLoading}
-                    className={`w-full md:w-auto flex items-center justify-center px-8 py-3 rounded-xl font-semibold text-base transition-all duration-300 ${
-                      passwordLoading
+                    className={`w-full md:w-auto flex items-center justify-center px-8 py-3 rounded-xl font-semibold text-base transition-all duration-300 ${passwordLoading
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 transform hover:scale-105 shadow-lg hover:shadow-xl'
-                    }`}
+                      }`}
                   >
                     {passwordLoading ? (
                       <>

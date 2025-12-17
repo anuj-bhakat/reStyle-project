@@ -10,6 +10,7 @@ const ManagerProductReview = () => {
   const [error, setError] = useState("");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const isGuest = localStorage.getItem('isGuest') === 'true';
   const baseUrl = import.meta.env.VITE_BASE_URL;
 
   // Pricing form state
@@ -173,7 +174,7 @@ const ManagerProductReview = () => {
       console.error("Approval Error:", err);
       setPricingError(
         err.response?.data?.message ||
-          "Failed to approve or send pickup request."
+        "Failed to approve or send pickup request."
       );
     } finally {
       setSubmitting(false);
@@ -342,11 +343,10 @@ const ManagerProductReview = () => {
                   <button
                     key={image.image_id}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
-                      selectedImageIndex === index
-                        ? "border-blue-500 shadow-lg ring-2 ring-blue-200"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-200 ${selectedImageIndex === index
+                      ? "border-blue-500 shadow-lg ring-2 ring-blue-200"
+                      : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     <img
                       src={image.url}
@@ -550,12 +550,12 @@ const ManagerProductReview = () => {
             <div className="bg-white rounded-lg shadow-md p-3 border border-gray-100">
               <button
                 onClick={handleApproveAndSend}
-                disabled={submitting || !isFormReady}
-                className={`w-full py-2.5 rounded-lg font-medium transition-all duration-300 shadow-md text-sm ${
-                  submitting || !isFormReady
-                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
-                }`}
+                disabled={submitting || !isFormReady || isGuest}
+                title={isGuest ? "Action disabled in Guest Mode" : ""}
+                className={`w-full py-2.5 rounded-lg font-medium transition-all duration-300 shadow-md text-sm ${submitting || !isFormReady || isGuest
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-lg"
+                  }`}
               >
                 {submitting ? (
                   <div className="flex items-center justify-center">
@@ -604,9 +604,8 @@ const DropdownAgentSelector = ({
         </span>
         <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <svg
-            className={`h-5 w-5 text-gray-400 transform transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
-            }`}
+            className={`h-5 w-5 text-gray-400 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+              }`}
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -628,9 +627,8 @@ const DropdownAgentSelector = ({
                 setSelectedAgentId(agent.deliveryagent_id);
                 setIsOpen(false);
               }}
-              className={`cursor-pointer select-none relative py-3 pl-4 pr-9 hover:bg-indigo-50 transition-colors ${
-                selectedAgentId === agent.deliveryagent_id ? "bg-indigo-50 text-indigo-700" : "text-gray-700"
-              }`}
+              className={`cursor-pointer select-none relative py-3 pl-4 pr-9 hover:bg-indigo-50 transition-colors ${selectedAgentId === agent.deliveryagent_id ? "bg-indigo-50 text-indigo-700" : "text-gray-700"
+                }`}
             >
               <span className="font-medium">{agent.agentid}</span>
               {selectedAgentId === agent.deliveryagent_id && (

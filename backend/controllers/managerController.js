@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { JWT_MANAGER_SECRET, TOKEN_EXPIRY } from '../config/jwtManager.js';
-import { createManager, managerLogin, updateManager, deleteManager } from '../services/managerService.js';
+import { createManager, managerLogin, updateManager, deleteManager, guestManagerLogin } from '../services/managerService.js';
 import { fetchAllManagers } from '../services/managerService.js';
 
 export const getAllManagersController = async (req, res) => {
@@ -50,6 +50,35 @@ export const loginManagerController = async (req, res) => {
     res.status(401).json({ error: error.message });
   }
 };
+
+export const guestLoginManagerController = async (req, res) => {
+  try {
+    const manager = await guestManagerLogin();
+
+    const payload = {
+      id: manager.id,
+      manager_id: manager.manager_id,
+      isGuest: true
+    };
+
+    const token = jwt.sign(payload, JWT_MANAGER_SECRET, { expiresIn: TOKEN_EXPIRY });
+
+    res.json({
+      message: 'Guest login successful',
+      managerToken: token,
+      isGuest: true,
+      manager: {
+        manager_id: manager.manager_id,
+        name: manager.name,
+        email: manager.email
+      }
+    });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+};
+
+
 
 
 export const editManagerController = async (req, res) => {

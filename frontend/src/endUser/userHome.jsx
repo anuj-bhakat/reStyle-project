@@ -68,6 +68,7 @@ const UserHome = () => {
     if (confirmLogout) {
       localStorage.removeItem('token');
       localStorage.removeItem('userid');
+      localStorage.removeItem('isGuest');
       navigate('/');
     }
   };
@@ -91,28 +92,31 @@ const UserHome = () => {
             {/* Brand Name */}
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-gray-900 font-['Montserrat']">reStyle</h1>
+              {localStorage.getItem('isGuest') === 'true' && (
+                <span className="ml-3 px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wide rounded-full border border-amber-200 shadow-sm animate-pulse">
+                  Guest Mode
+                </span>
+              )}
             </div>
 
             {/* Buy/Sell Buttons & Cart Icon */}
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleBuyClick}
-                className={`px-6 py-2 font-semibold rounded-full shadow-md transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
-                  isBuyActive
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500'
-                }`}
+                className={`px-6 py-2 font-semibold rounded-full shadow-md transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${isBuyActive
+                  ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500'
+                  }`}
               >
                 <ShoppingBagIcon className="w-5 h-5 inline mr-2" />
                 Buy
               </button>
               <button
                 onClick={handleSellClick}
-                className={`px-6 py-2 font-semibold rounded-full shadow-md transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
-                  !isBuyActive
-                    ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500'
-                }`}
+                className={`px-6 py-2 font-semibold rounded-full shadow-md transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${!isBuyActive
+                  ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500'
+                  }`}
               >
                 <TagIcon className="w-5 h-5 inline mr-2" />
                 Sell
@@ -126,7 +130,7 @@ const UserHome = () => {
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m5-9v9m4-9v9m4-9l2 9" />
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m5-9v9m4-9v9m4-9l2 9" />
                 </svg>
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
@@ -149,9 +153,8 @@ const UserHome = () => {
 
       {/* Right-Side Dashboard Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
-          isDashboardOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${isDashboardOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">

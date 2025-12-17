@@ -59,6 +59,26 @@ export const managerLogin = async (manager_id, password) => {
   return data;
 };
 
+export const guestManagerLogin = async () => {
+  const guestManagerId = process.env.GUEST_MANAGER_ID;
+
+  if (!guestManagerId) {
+    throw new Error('Guest manager login is not configured');
+  }
+
+  const { data, error } = await supabase
+    .from('managers')
+    .select('*')
+    .eq('manager_id', guestManagerId)
+    .single();
+
+  if (error || !data) {
+    throw new Error('Guest manager user not found');
+  }
+
+  return { ...data, isGuest: true };
+};
+
 
 export const updateManager = async (id, updateData) => {
   const updates = {};

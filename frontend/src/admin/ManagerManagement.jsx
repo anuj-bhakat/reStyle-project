@@ -19,20 +19,20 @@ const Input = ({ label, name, value, onChange, type = 'text', placeholder }) => 
 );
 
 const ManagerManagement = () => {
-  const [formData, setFormData] = useState({ 
-    manager_id: '', 
-    name: '', 
-    email: '', 
-    password: '', 
-    phone: '' 
+  const [formData, setFormData] = useState({
+    manager_id: '',
+    name: '',
+    email: '',
+    password: '',
+    phone: ''
   });
-  const [editData, setEditData] = useState({ 
-    id: '', 
-    manager_id: '', 
-    name: '', 
-    email: '', 
-    password: '', 
-    phone: '' 
+  const [editData, setEditData] = useState({
+    id: '',
+    manager_id: '',
+    name: '',
+    email: '',
+    password: '',
+    phone: ''
   });
   const [managers, setManagers] = useState([]);
   const [message, setMessage] = useState('');
@@ -94,7 +94,7 @@ const ManagerManagement = () => {
 
       const response = await fetch(`${API_BASE_URL}/signup`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${adminToken}`
         },
@@ -113,7 +113,7 @@ const ManagerManagement = () => {
       }
 
       const result = await response.json();
-      
+
       // Add the new manager to the list
       const newManager = {
         id: Date.now(),
@@ -123,7 +123,7 @@ const ManagerManagement = () => {
         phone: formData.phone.trim(),
         created_at: new Date().toISOString()
       };
-      
+
       setManagers(prev => [...prev, newManager]);
       setFormData({ manager_id: '', name: '', email: '', password: '', phone: '' });
       setShowAddForm(false);
@@ -170,7 +170,7 @@ const ManagerManagement = () => {
 
       const response = await fetch(`${API_BASE_URL}/${editData.id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${adminToken}`
         },
@@ -183,9 +183,9 @@ const ManagerManagement = () => {
       }
 
       await response.json();
-      
+
       // Update the manager in the list
-      setManagers(prev => prev.map(m => 
+      setManagers(prev => prev.map(m =>
         m.id === editData.id ? {
           ...m,
           manager_id: editData.manager_id.trim(),
@@ -194,7 +194,7 @@ const ManagerManagement = () => {
           phone: editData.phone.trim()
         } : m
       ));
-      
+
       setEditData({ id: '', manager_id: '', name: '', email: '', password: '', phone: '' });
       setIsEditing(false);
       setShowList(true);
@@ -280,17 +280,15 @@ const ManagerManagement = () => {
             <div className="flex space-x-4">
               <button
                 onClick={showAddFormHandler}
-                className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${
-                  showAddForm ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${showAddForm ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 Add Manager
               </button>
               <button
                 onClick={showListHandler}
-                className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${
-                  showList ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${showList ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 View Managers
               </button>
@@ -362,7 +360,7 @@ const ManagerManagement = () => {
                 {isLoadingManagers ? 'Refreshing...' : 'Refresh'}
               </button>
             </div>
-            
+
             {isLoadingManagers ? (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

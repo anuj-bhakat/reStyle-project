@@ -1,188 +1,59 @@
-# reStyle - E-commerce Platform for Sustainable Fashion
+# reStyle
 
-**reStyle** is a full-stack e-commerce platform with a focus on sustainability, offering a marketplace for users to buy and sell pre-loved and redesigned apparel.
-Our motto, *"Purani Cheezen Nayi Kahaniyan"* (Old things, new stories), emphasizes the value of second-hand clothing and the stories behind them, while supporting the reuse and recycling of fashion.
+reStyle is a comprehensive digital platform designed to streamline the lifecycle of pre-owned and redesigned products. It bridges the gap between buyers, sellers, and logistics providers, offering a seamless experience for e-commerce transactions, product redesign management, and delivery logistics.
 
------
+The system caters to multiple user roles including regular customers, managers, administrators, and delivery agents, each with dedicated dashboards and workflows to ensure efficient operations from listing to delivery.
 
-## Project Overview
+## Features
 
-ReStyle is designed to facilitate the buying and selling of second-hand and redesigned apparel. Our mission is to promote sustainable fashion by providing a seamless, secure, and efficient marketplace for users to give their clothes a second life. The platform features distinct user roles, including customers, managers, delivery agents, and an admin, each with a tailored dashboard to manage their specific tasks.
+### 🛍️ End Users (Customers & Sellers)
+*   **User Authentication**: Secure signup and login functionality.
+*   **Product Marketplace**: Browse, search, and buy products with ease.
+*   **Selling Platform**: List pre-owned items for sale using the "Sell Product" feature.
+*   **Order Management**:
+    *   **Cart**: Manage items before purchase.
+    *   **Order Summary**: Review details before checkout.
+    *   **History**: Track "Customer Order History" for purchases and "Seller Order History" for sold items.
+*   **Profile Management**: Update personal details and preferences.
 
------
+### 👔 Managers
+*   **Dashboard**: Centralized hub for overseeing operations.
+*   **Product Management**:
+    *   **Review**: Approve or reject new product listings from sellers.
+    *   **Edit**: Modify product details as needed.
+    *   **Redesign Review**: Evaluate and manage products flagged for redesign.
+*   **Warehouse Operations**:
+    *   **Requests**: specific view for handling warehouse stocking requests.
+    *   **Detailed Reviews**: In-depth inspection of warehouse inventory items.
+*   **Customer Order Oversight**: Monitor and manage customer orders handled by the platform.
 
-## Key Features
+### 🚚 Delivery Agents
+*   **Agent Dashboard**: Quick view of assigned tasks and status.
+*   **Delivery Management**: Handle outgoing deliveries to customers.
+*   **Pickup Requests**: Manage pickups from sellers or warehouses.
 
-### User Flow
+### 🛠️ Administrators
+*   **Admin Dashboard**: High-level overview of system health and metrics.
+*   **User Management**:
+    *   **Manager Management**: Add, remove, or update manager accounts.
+    *   **Delivery Agent Management**: Oversee delivery personnel and their assignments.
+*   **Security**: Dedicated admin login gate.
 
-1.  **Landing Page**: The website welcomes users with a landing page promoting sustainability in fashion.
-2.  **Login/Signup**: Users can either log in or sign up. After a successful login, users are redirected to the homepage.
-3.  **Home Page**:
-      * **Old Products**: Users can browse a collection of pre-loved apparel.
-      * **Redesigned Products**: Items that have been refurbished and redesigned by our design team.
-4.  **Buy or Sell**:
-      * **Buy Products**: Users can purchase items from either the "Old Products" or "Redesigned Products" sections.
-      * **Sell Products**: Users can list their used apparel by filling in the required details and uploading images.
-5.  **User Dashboard**:
-      * Users can edit their profile information.
-      * View the history of bought and sold products.
+## Technology Stack
 
-### Manager Role
+### Frontend
+The user interface is built for performance and responsiveness using modern web standards.
+*   **Framework**: [React](https://react.dev/) (v19)
+*   **Build Tool**: [Vite](https://vitejs.dev/)
+*   **Styling**: [TailwindCSS](https://tailwindcss.com/) (v4)
+*   **Routing**: [React Router](https://reactrouter.com/) (v7)
+*   **Icons**: Heroicons
 
-1.  **Manage Products**:
-      * View a list of pending sell requests from users.
-      * Add a verification checklist for the delivery agent.
-      * Assign delivery agents for pickups and deliveries.
-2.  **Warehouse Management**:
-      * View products available in the warehouse.
-      * For each product, choose whether to make it live on the site or send it for redesigning.
-3.  **Redigned Product**: After redesign, the product's details are updated, and it is made live on the website.
-
-### Delivery Agent Role
-
-1.  **Product Pickup & Delivery**:
-      * Pick up products from users and deliver them to the warehouse.
-      * Verify the checklist provided by the manager during pickup.
-      * Deliver purchased products from the warehouse to buyers.
-2.  **Payment to Seller**: After successful verification, the agent pays the seller the agreed-upon price at the time of pickup.
-3.  **Delivery History**: View the history of products delivered and picked up.
-
-### Admin Role
-
-1.  **User Management**:
-      * View the list of managers and delivery agents.
-      * Add, edit, or delete manager or delivery agent records.
-
------
-
-## Tech Stack
-
-  * **Frontend**: React, Tailwind CSS
-  * **Backend**: Node.js, Express.js
-  * **Database**: Supabase
-  * **File Storage**: Cloudinary
-
------
-
-## Project Structure
-
-```
-RESTYLE/
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middlewares/
-│   ├── node_modules/
-│   ├── routes/
-│   ├── services/
-│   ├── validators/
-│   ├── .env
-│   ├── app.js
-│   ├── package.json
-│   └── package-lock.json
-│
-└── frontend/
-    ├── node_modules/
-    ├── src/
-    │   ├── admin/
-    │   ├── deliveryAgent/
-    │   ├── endUser/
-    │   └── Manager/
-    │   ├── App.jsx
-    │   └── ...
-    ├── .gitignore
-    ├── index.html
-    ├── package.json
-    └── ...
-```
-
------
-
-## Getting Started
-
-### Prerequisites
-
-  * **Node.js** and **npm** installed on your local machine.
-  * A **Supabase** project set up with API keys.
-  * A **Cloudinary** account for image storage.
-
-### Steps to Set Up Locally
-
-1.  **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/anuj-bhakat/reStyle-project.git
-    ```
-
-2.  **Navigate to the project directory:**
-
-    ```bash
-    cd reStyle
-    ```
-
-3.  **Install dependencies for both frontend and backend:**
-
-    **Backend:**
-
-    ```bash
-    cd backend
-    npm install
-    ```
-
-    **Frontend:**
-
-    ```bash
-    cd ../frontend
-    npm install
-    ```
-
-4.  **Set up environment variables:**
-
-      * Create a `.env` file in the `backend` directory.
-      * Add your Supabase and Cloudinary credentials.
-
-5.  **Run the application:**
-
-    **Backend:**
-
-    ```bash
-    cd backend
-    npm start
-    ```
-
-    **Frontend:**
-
-    ```bash
-    cd ../frontend
-    npm run dev
-    ```
-
-6.  Open your browser and navigate to the local server address provided (usually `http://localhost:5173`).
-
------
-
-## Contributing
-
-We welcome contributions to reStyle\! If you’d like to contribute, please follow these steps:
-
-1.  Fork the repository.
-2.  Create a new branch: `git checkout -b feature-name`
-3.  Make your changes and commit them: `git commit -am 'Add some feature'`
-4.  Push to your branch: `git push origin feature-name`
-5.  Open a Pull Request to the main repository.
-
------
-
-## License
-
-This software and associated files are the intellectual property of PIONEERS.  
-Unauthorized copying, modification, distribution, or use of this software, in whole or in part, is strictly prohibited without explicit written permission from the owner.
-
-This project is **not open-source** and is provided solely for personal or organizational use as agreed upon.  
-No rights are granted to use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the software unless a separate license agreement is obtained.
-
------
-
-## Team
-
-Team PIONEERS
+### Backend
+A robust and scalable server-side architecture.
+*   **Runtime**: [Node.js](https://nodejs.org/)
+*   **Framework**: [Express.js](https://expressjs.com/)
+*   **Database**: [Supabase](https://supabase.com/)
+*   **Authentication**: JWT (JSON Web Tokens) & Bcrypt
+*   **File Storage**: Cloudinary (via `multer-storage-cloudinary`)
+*   **Utilities**: `cors`, `dotenv`, `express-validator`, `uuid`

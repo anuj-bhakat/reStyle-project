@@ -1,4 +1,4 @@
-import { signup, login } from '../services/authService.js';
+import { signup, login, guestLogin } from '../services/authService.js';
 
 export const signupController = async (req, res) => {
   try {
@@ -9,9 +9,9 @@ export const signupController = async (req, res) => {
       message: 'Signup successful',
       id: result.id,
       email: result.email,
-      token: loginResult.token, 
+      token: loginResult.token,
     });
-    
+
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -25,6 +25,15 @@ export const loginController = async (req, res) => {
     }
     const result = await login(email, password);
     res.json({ message: 'Login successful', ...result });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+};
+
+export const guestLoginController = async (req, res) => {
+  try {
+    const result = await guestLogin();
+    res.json({ message: 'Guest login successful', ...result });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }

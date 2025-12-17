@@ -3,6 +3,7 @@ import { authenticateAdminToken } from '../middlewares/authAdminMiddleware.js';
 import {
   deliveryAgentSignup,
   deliveryAgentLogin,
+  guestDeliveryAgentLogin,
   getAllDeliveryAgents,
   deleteDeliveryAgent,
   editDeliveryAgent
@@ -32,6 +33,15 @@ router.post('/login', async (req, res) => {
     }
     const agent = await deliveryAgentLogin(email, password);
     res.json({ message: 'Login successful', agent });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+});
+
+router.post('/guest-login', async (req, res) => {
+  try {
+    const agent = await guestDeliveryAgentLogin();
+    res.json({ message: 'Guest login successful', agent });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }

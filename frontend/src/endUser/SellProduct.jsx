@@ -268,6 +268,42 @@ const SellProduct = () => {
     }
   };
 
+  const isGuest = localStorage.getItem('isGuest') === 'true';
+
+  if (isGuest) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden text-center p-12">
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Start Selling with reStyle</h2>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              Guest accounts cannot list items for sale. seamlessy create an account to start selling your pre-loved fashion.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate('/signup')}
+                className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md"
+              >
+                Create Selling Account
+              </button>
+              <button
+                onClick={() => navigate('/login')}
+                className="px-6 py-2.5 bg-white text-gray-700 border border-gray-300 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Log In
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const steps = [
     { id: 1, name: "Details", description: "Product information" },
     { id: 2, name: "Images", description: "Upload product photos" },
@@ -306,19 +342,17 @@ const SellProduct = () => {
               {steps.map((step, index) => (
                 <React.Fragment key={step.id}>
                   <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                      currentStep >= step.id
+                    className={`flex items-center justify-center w-10 h-10 rounded-full ${currentStep >= step.id
                         ? "bg-blue-500 text-white"
                         : "bg-gray-200 text-gray-600"
-                    }`}
+                      }`}
                   >
                     {step.id}
                   </div>
                   {index < steps.length - 1 && (
                     <div
-                      className={`w-16 h-1 ${
-                        currentStep > step.id ? "bg-blue-500" : "bg-gray-200"
-                      }`}
+                      className={`w-16 h-1 ${currentStep > step.id ? "bg-blue-500" : "bg-gray-200"
+                        }`}
                     />
                   )}
                 </React.Fragment>
@@ -373,9 +407,8 @@ const SellProduct = () => {
                     name="productType"
                     value={formData.productType}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.productType ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.productType ? "border-red-500" : "border-gray-300"
+                      }`}
                   >
                     <option value="">Select product type</option>
                     <option value="shoes">Shoes</option>
@@ -411,9 +444,8 @@ const SellProduct = () => {
                           id="size"
                           value={formData.checklist.size}
                           onChange={(e) => handleChecklistChange("size", e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            errors.size ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.size ? "border-red-500" : "border-gray-300"
+                            }`}
                           placeholder="Enter size"
                         />
                         {errors.size && (
@@ -434,9 +466,8 @@ const SellProduct = () => {
                           id="color"
                           value={formData.checklist.color}
                           onChange={(e) => handleChecklistChange("color", e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            errors.color ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.color ? "border-red-500" : "border-gray-300"
+                            }`}
                           placeholder="e.g., Red, Blue"
                         />
                         {errors.color && (
@@ -457,9 +488,8 @@ const SellProduct = () => {
                           id="material"
                           value={formData.checklist.material}
                           onChange={(e) => handleChecklistChange("material", e.target.value)}
-                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            errors.material ? "border-red-500" : "border-gray-300"
-                          }`}
+                          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.material ? "border-red-500" : "border-gray-300"
+                            }`}
                           placeholder="e.g., Cotton, Leather"
                         />
                         {errors.material && (
@@ -484,9 +514,8 @@ const SellProduct = () => {
                     name="brandName"
                     value={formData.brandName}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.brandName ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.brandName ? "border-red-500" : "border-gray-300"
+                      }`}
                     placeholder="Enter brand name"
                   />
                   {errors.brandName && (
@@ -507,9 +536,8 @@ const SellProduct = () => {
                     name="condition"
                     value={formData.condition}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.condition ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.condition ? "border-red-500" : "border-gray-300"
+                      }`}
                   >
                     <option value="">Select condition</option>
                     <option value="new">New</option>
@@ -535,9 +563,8 @@ const SellProduct = () => {
                     rows={4}
                     value={formData.description}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.description ? "border-red-500" : "border-gray-300"
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? "border-red-500" : "border-gray-300"
+                      }`}
                     placeholder="Describe your product in detail..."
                   />
                   <div className="flex justify-between mt-1">

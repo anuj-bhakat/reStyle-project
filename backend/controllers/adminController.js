@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { JWT_ADMIN_SECRET, TOKEN_EXPIRY } from '../config/jwtAdmin.js';
-import { createAdmin, adminLogin, updateAdmin } from '../services/adminService.js';
+import { createAdmin, adminLogin, updateAdmin, guestAdminLogin } from '../services/adminService.js';
 
 export const signupAdminController = async (req, res) => {
   try {
@@ -30,6 +30,35 @@ export const loginAdminController = async (req, res) => {
     res.status(401).json({ error: error.message });
   }
 };
+
+export const guestLoginAdminController = async (req, res) => {
+  try {
+    const admin = await guestAdminLogin();
+
+    // Create token payload
+    const payload = {
+      adminId: admin.admin_id,
+      username: admin.username,
+      isGuest: true
+    };
+
+    const token = jwt.sign(payload, JWT_ADMIN_SECRET, { expiresIn: TOKEN_EXPIRY });
+
+    res.json({
+      message: 'Guest login successful',
+      adminToken: token,
+      isGuest: true,
+      admin: {
+        username: admin.username,
+        email: admin.email
+      }
+    });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+};
+
+
 
 export const editAdminController = async (req, res) => {
   try {

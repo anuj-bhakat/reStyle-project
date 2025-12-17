@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import ManagerNavbar from "./ManagerNavbar";
 
 const WarehouseRequests = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [pickedUpProducts, setPickedUpProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,13 +47,6 @@ const WarehouseRequests = () => {
     navigate("/warehouse-reviews-detailed", { state: { listingId } });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("managerToken");
-    navigate("/manager-login", { replace: true });
-  };
-
-  const isActive = (path) => location.pathname.startsWith(path);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -84,50 +77,7 @@ const WarehouseRequests = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-900">Manager Dashboard</h1>
-          <div className="space-x-2 sm:space-x-4">
-            <button
-              onClick={() => navigate("/manager-dashboard")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-                isActive("/manager-dashboard")
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              Pending Requests
-            </button>
-            <button
-              onClick={() => navigate("/warehouse-reviews")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-                isActive("/warehouse-reviews")
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              Warehouse Requests
-            </button>
-            <button
-              onClick={() => navigate("/manager-redesign-review")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-                isActive("/manager-redesign-review")
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              Redesign Review
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
+      <ManagerNavbar />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-10">
@@ -197,17 +147,7 @@ const WarehouseRequests = () => {
                     </div>
                   )}
 
-                  {/* Timestamps */}
-                  <div className="text-[12px] text-blue-700 font-medium mb-3">
-                    <div className="flex items-center mb-1">
-                      <span className="mr-1">📅</span>
-                      <span>Created: {formatDate(product.created_at)}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="mr-1">📝</span>
-                      <span>Updated: {formatDate(product.updated_at)}</span>
-                    </div>
-                  </div>
+
 
                   {/* Review Button */}
                   <button

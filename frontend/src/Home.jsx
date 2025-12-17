@@ -25,7 +25,7 @@ const Home = () => {
 
         // pick up to 6 random products from combined array
         const shuffled = combined.sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, 6).map(p => {
+        const selected = shuffled.slice(0, 8).map(p => {
           const primaryImage = p.product_images.find(img => img.is_primary);
           return {
             listingId: p.listing_id,
@@ -50,29 +50,50 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation Header */}
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">reStyle</h1>
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center group cursor-pointer" onClick={() => navigate('/home')}>
+              <span className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 tracking-tight group-hover:opacity-80 transition duration-300">
+                reStyle
+              </span>
             </div>
-            <div className="flex space-x-4">
-              <Link
-                to="/login"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Log In
-              </Link>
-              <Link
-                to="/signup"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Sign Up
-              </Link>
+
+            <div className="flex items-center space-x-6">
+              <div className="hidden md:flex items-center space-x-1 bg-gray-50 rounded-full px-4 py-1.5 border border-gray-100">
+                <Link to="/agent-login" className="text-gray-500 hover:text-indigo-600 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 hover:bg-white hover:shadow-sm">
+                  Delivery
+                </Link>
+                <Link to="/manager-login" className="text-gray-500 hover:text-indigo-600 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 hover:bg-white hover:shadow-sm">
+                  Manager
+                </Link>
+                <Link to="/admin-login" className="text-gray-500 hover:text-indigo-600 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 hover:bg-white hover:shadow-sm">
+                  Admin
+                </Link>
+              </div>
+
+              <div className="h-6 w-px bg-gray-200 hidden md:block"></div>
+
+              <div className="flex items-center space-x-3">
+                <Link
+                  to="/login"
+                  className="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
+                >
+                  Sign Up
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </nav>
+      {/* Spacer for fixed navbar */}
+      <div className="h-20"></div>
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
@@ -106,24 +127,24 @@ const Home = () => {
             </h2>
             <p className="text-lg text-gray-600">Handpicked pieces that blend style with sustainability</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.length > 0 ? (
               products.map(({ listingId, name, price, description, imgUrl }) => (
                 <div
                   key={listingId}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300"
+                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition duration-300 border border-gray-100"
                 >
-                  <img src={imgUrl} alt={name} className="w-full h-64 object-cover" />
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{name}</h3>
-                    <p className="text-gray-600 mb-4">{description}</p>
+                  <img src={imgUrl} alt={name} className="w-full h-40 object-cover" />
+                  <div className="p-3">
+                    <h3 className="text-base font-semibold text-gray-900 mb-1 truncate">{name}</h3>
+                    <p className="text-gray-500 mb-2 text-xs line-clamp-2">{description}</p>
                     <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold text-indigo-600">{price}</span>
+                      <span className="text-lg font-bold text-indigo-600">{price}</span>
                       <button
                         onClick={() => handleViewDetails(listingId)}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-300"
+                        className="px-2.5 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 transition duration-300"
                       >
-                        View Details
+                        View
                       </button>
                     </div>
                   </div>

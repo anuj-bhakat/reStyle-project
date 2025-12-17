@@ -65,6 +65,39 @@ export const login = async (email, password) => {
   };
 };
 
+export const guestLogin = async () => {
+  const guestEmail = process.env.GUEST_EMAIL;
+
+  if (!guestEmail) {
+    throw new Error('Guest login is not configured');
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, first_name, last_name, email')
+    .eq('email', guestEmail)
+    .single();
+
+  if (error || !data) {
+    throw new Error('Guest user not found');
+  }
+
+  const token = jwt.sign({ userId: data.id, email: data.email }, JWT_SECRET, {
+    expiresIn: '10h',
+  });
+
+  return {
+    token,
+    user: {
+      id: data.id,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      email: data.email,
+    },
+    isGuest: true
+  };
+};
+
 export const updateAddress = async (userId, addressData) => {
   const { phone, plot, colony, city, country } = addressData;
 
