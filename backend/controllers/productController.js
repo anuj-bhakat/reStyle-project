@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabaseClient.js';
+import { pool } from '../config/db.js';
 import { fetchAllProductsWithImages, addProductWithImages, fetchAndUpdateBasePriceForPickupRequest, fetchProductsBySellerIdWithImages } from '../services/productService.js';
 import { fetchProductById } from '../services/productService.js';
 import { updateProductWithImages } from '../services/productService.js';
@@ -30,7 +30,6 @@ export const getProductByIdController = async (req, res) => {
   }
 };
 
-
 export const addProductController = async (req, res) => {
   try {
     const images = req.files || [];
@@ -40,7 +39,6 @@ export const addProductController = async (req, res) => {
       return res.status(400).json({ error: 'At least one image file is required' });
     }
 
-    // Parse JSON strings if sent as strings
     if (productData.algorithm_price && typeof productData.algorithm_price === 'string') {
       productData.algorithm_price = JSON.parse(productData.algorithm_price);
     }
@@ -48,11 +46,8 @@ export const addProductController = async (req, res) => {
       productData.checklist_json = JSON.parse(productData.checklist_json);
     }
 
-    // Convert prices to numbers if available, else leave undefined
     productData.base_price = productData.base_price ? parseFloat(productData.base_price) : null;
     productData.final_price = productData.final_price ? parseFloat(productData.final_price) : null;
-
-    // Set default status to 'draft' if not provided
     productData.status = productData.status || 'draft';
 
     const imageEntries = images.map((file, idx) => ({
@@ -68,8 +63,6 @@ export const addProductController = async (req, res) => {
   }
 };
 
-
-
 export const updateProductController = async (req, res) => {
   try {
     const listing_id = req.params.listing_id;
@@ -82,7 +75,6 @@ export const updateProductController = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 export const getAwaitingReviewProductsController = async (req, res) => {
   try {
@@ -121,7 +113,6 @@ export const getProductsByStatusParamController = async (req, res) => {
   }
 };
 
-// GET /products/base-price/:pickup_request_id
 export const getAndUpdateBasePriceByPickupRequestId = async (req, res) => {
   try {
     const { pickup_request_id } = req.params;
@@ -149,36 +140,34 @@ export const updateProductImagesController = async (req, res) => {
       return res.status(400).json({ error: 'Maximum 10 images are allowed' });
     }
 
-    // Map images as per addProductController
     const imageEntries = images.map((file, idx) => ({
       url: file.path,
       is_primary: idx === 0,
     }));
 
-    // Delete existing images for this listing
-    const { error: deleteError } = await supabase
-      .from('product_images')
-      .delete()
-      .eq('listing_id', listing_id);
+    const client = await pool.connect();
+    let imagesData = [];
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM product_images WHERE listing_id = $1', [listing_id]);
 
-    if (deleteError) {
-      return res.status(500).json({ error: 'Failed to delete old images' });
-    }
+      const imgValues = [];
+      const imgPlaceholders = imageEntries.map((img, idx) => {
+        const offset = idx * 3;
+        imgValues.push(listing_id, img.url, img.is_primary);
+        return `($${offset + 1}, $${offset + 2}, $${offset + 3})`;
+      }).join(', ');
 
-    // Insert new images
-    const { data: imagesData, error: insertError } = await supabase
-      .from('product_images')
-      .insert(
-        imageEntries.map(img => ({
-          listing_id,
-          url: img.url,
-          is_primary: img.is_primary,
-        }))
-      )
-      .select();
+      const imgQuery = `INSERT INTO product_images (listing_id, url, is_primary) VALUES ${imgPlaceholders} RETURNING *`;
+      const imgResult = await client.query(imgQuery, imgValues);
+      imagesData = imgResult.rows;
 
-    if (insertError) {
-      return res.status(500).json({ error: 'Failed to insert new images' });
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
     }
 
     res.status(200).json({ 
@@ -189,7 +178,6 @@ export const updateProductImagesController = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 export const getProductsBySellerIdController = async (req, res) => {
   try {
@@ -204,7 +192,6 @@ export const getProductsBySellerIdController = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 export const getMultipleProductsController = async (req, res) => {
   try {

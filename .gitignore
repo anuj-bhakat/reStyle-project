@@ -9,3 +9,4 @@ frontend/node_modules/
 
 
 backend/supabase_schema.sql
+backend/neondb_schema.sql

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { supabase } from '../config/supabaseClient.js';
+import { pool } from '../config/db.js';
 import { JWT_SECRET } from '../config/jwt.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,34 +14,25 @@ export const signup = async (userData) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const id = uuidv4();
 
-  const { data, error } = await supabase.from('profiles').insert([
-    {
-      id,
-      first_name,
-      last_name,
-      email,
-      gender,
-      phone,
-      password_hash: passwordHash,
-      address: null,
-    },
-  ]).select();
-
-  if (error) {
+  try {
+    const result = await pool.query(
+      'INSERT INTO profiles (id, first_name, last_name, email, gender, phone, password_hash, address) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [id, first_name, last_name, email, gender, phone, passwordHash, null]
+    );
+    return { id, email: result.rows[0].email };
+  } catch (error) {
     throw error;
   }
-
-  return { id, email: data[0].email };
 };
 
 export const login = async (email, password) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, first_name, last_name, email, password_hash')
-    .eq('email', email)
-    .single();
+  const result = await pool.query(
+    'SELECT id, first_name, last_name, email, password_hash FROM profiles WHERE email = $1',
+    [email]
+  );
+  const data = result.rows[0];
 
-  if (error || !data) {
+  if (!data) {
     throw new Error('Invalid email or password');
   }
 
@@ -72,13 +63,13 @@ export const guestLogin = async () => {
     throw new Error('Guest login is not configured');
   }
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, first_name, last_name, email')
-    .eq('email', guestEmail)
-    .single();
+  const result = await pool.query(
+    'SELECT id, first_name, last_name, email FROM profiles WHERE email = $1',
+    [guestEmail]
+  );
+  const data = result.rows[0];
 
-  if (error || !data) {
+  if (!data) {
     throw new Error('Guest user not found');
   }
 
@@ -108,70 +99,72 @@ export const updateAddress = async (userId, addressData) => {
     country,
   };
 
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      phone,
-      address,
-    })
-    .eq('id', userId);
-
-  if (error) {
+  try {
+    const result = await pool.query(
+      'UPDATE profiles SET phone = $1, address = $2 WHERE id = $3 RETURNING *',
+      [phone, address, userId]
+    );
+    if (result.rows.length === 0) {
+      throw new Error('User not found');
+    }
+    return { message: 'Address updated successfully' };
+  } catch (error) {
     throw error;
   }
-
-  return { message: 'Address updated successfully' };
 };
 
 
 export const updateProfile = async (userId, profileData) => {
-  // Allowed editable fields
   const editableFields = ['first_name', 'last_name', 'phone', 'gender', 'email', 'address'];
 
-  const updates = {};
+  const updates = [];
+  const values = [];
+  let index = 1;
 
   editableFields.forEach(field => {
     if (profileData[field] !== undefined) {
-      // For address, ensure it's an object (or null) before including
       if (field === 'address') {
         if (typeof profileData.address === 'object' || profileData.address === null) {
-          updates.address = profileData.address;
+          updates.push(`address = $${index++}`);
+          values.push(profileData.address);
         } else {
           throw new Error('Address must be an object or null');
         }
       } else {
-        updates[field] = profileData[field];
+        updates.push(`${field} = $${index++}`);
+        values.push(profileData[field]);
       }
     }
   });
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('id', userId)
-    .select()
-    .single();
+  if (updates.length === 0) {
+    throw new Error('No fields to update');
+  }
 
-  if (error) {
+  values.push(userId);
+  const query = `UPDATE profiles SET ${updates.join(', ')} WHERE id = $${index} RETURNING *`;
+
+  try {
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) {
+      throw new Error('Failed to update profile');
+    }
+    return result.rows[0];
+  } catch (error) {
     throw error;
   }
-  if (!data) {
-    throw new Error('Failed to update profile');
-  }
-
-  return data;
 };
 
 
 
 export const changePassword = async (userId, oldPassword, newPassword) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('password_hash')
-    .eq('id', userId)
-    .single();
+  const result = await pool.query(
+    'SELECT password_hash FROM profiles WHERE id = $1',
+    [userId]
+  );
+  const data = result.rows[0];
 
-  if (error || !data) {
+  if (!data) {
     throw new Error('User not found');
   }
 
@@ -182,14 +175,13 @@ export const changePassword = async (userId, oldPassword, newPassword) => {
 
   const newHash = await bcrypt.hash(newPassword, 10);
 
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update({ password_hash: newHash })
-    .eq('id', userId);
-
-  if (updateError) {
+  try {
+    await pool.query(
+      'UPDATE profiles SET password_hash = $1 WHERE id = $2',
+      [newHash, userId]
+    );
+    return { message: 'Password changed successfully' };
+  } catch (updateError) {
     throw updateError;
   }
-
-  return { message: 'Password changed successfully' };
 };

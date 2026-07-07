@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '../config/supabaseClient.js';
+import { pool } from '../config/db.js';
 
 export const createManager = async (managerData) => {
   const { manager_id, name, email, password, phone } = managerData;
@@ -9,45 +9,30 @@ export const createManager = async (managerData) => {
     throw new Error('Missing required fields');
   }
 
-  const { data: existingData } = await supabase
-    .from('managers')
-    .select('*')
-    .eq('email', email)
-    .single();
-
-  if (existingData) {
+  const existingResult = await pool.query('SELECT * FROM managers WHERE email = $1', [email]);
+  if (existingResult.rows.length > 0) {
     throw new Error('Manager with this email already exists');
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
   const id = uuidv4();
 
-  // Remove isAdmin check and property
-  const { data, error } = await supabase.from('managers').insert([{
-    id,
-    manager_id,
-    name,
-    email,
-    password: passwordHash,
-    phone,
-  }]).select();
-
-  if (error) {
+  try {
+    const result = await pool.query(
+      'INSERT INTO managers (id, manager_id, name, email, password, phone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [id, manager_id, name, email, passwordHash, phone]
+    );
+    return result.rows[0];
+  } catch (error) {
     throw error;
   }
-
-  return data[0];
 };
 
-
 export const managerLogin = async (manager_id, password) => {
-  const { data, error } = await supabase
-    .from('managers')
-    .select('*')
-    .eq('manager_id', manager_id)
-    .single();
+  const result = await pool.query('SELECT * FROM managers WHERE manager_id = $1', [manager_id]);
+  const data = result.rows[0];
 
-  if (error || !data) {
+  if (!data) {
     throw new Error('Invalid manager ID or password');
   }
 
@@ -66,70 +51,74 @@ export const guestManagerLogin = async () => {
     throw new Error('Guest manager login is not configured');
   }
 
-  const { data, error } = await supabase
-    .from('managers')
-    .select('*')
-    .eq('manager_id', guestManagerId)
-    .single();
+  const result = await pool.query('SELECT * FROM managers WHERE manager_id = $1', [guestManagerId]);
+  const data = result.rows[0];
 
-  if (error || !data) {
+  if (!data) {
     throw new Error('Guest manager user not found');
   }
 
   return { ...data, isGuest: true };
 };
 
-
 export const updateManager = async (id, updateData) => {
-  const updates = {};
+  const updates = [];
+  const values = [];
+  let index = 1;
 
-  if (updateData.name) updates.name = updateData.name;
-  if (updateData.email) updates.email = updateData.email;
-  if (updateData.phone) updates.phone = updateData.phone;
+  if (updateData.name) {
+    updates.push(`name = $${index++}`);
+    values.push(updateData.name);
+  }
+  if (updateData.email) {
+    updates.push(`email = $${index++}`);
+    values.push(updateData.email);
+  }
+  if (updateData.phone) {
+    updates.push(`phone = $${index++}`);
+    values.push(updateData.phone);
+  }
   if (updateData.password) {
-    updates.password = await bcrypt.hash(updateData.password, 10);
+    const hash = await bcrypt.hash(updateData.password, 10);
+    updates.push(`password = $${index++}`);
+    values.push(hash);
   }
 
-  if (Object.keys(updates).length === 0) {
+  if (updates.length === 0) {
     throw new Error('No fields to update');
   }
 
-  const { data, error } = await supabase
-    .from('managers')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
+  values.push(id);
+  const query = `UPDATE managers SET ${updates.join(', ')} WHERE id = $${index} RETURNING *`;
 
-  if (error) {
+  try {
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) {
+      throw new Error('Manager not found for update');
+    }
+    return result.rows[0];
+  } catch (error) {
     throw error;
   }
-
-  return data;
 };
 
 export const deleteManager = async (id) => {
-  const { error } = await supabase
-    .from('managers')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
+  try {
+    const result = await pool.query('DELETE FROM managers WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
+      throw new Error('Manager not found');
+    }
+    return { message: 'Manager deleted successfully' };
+  } catch (error) {
     throw error;
   }
-
-  return { message: 'Manager deleted successfully' };
 };
 
-
 export const fetchAllManagers = async () => {
-  const { data, error } = await supabase
-    .from('managers')
-    .select('id, manager_id, name, email, phone, created_at, updated_at');
-
-  if (error) {
+  try {
+    const result = await pool.query('SELECT id, manager_id, name, email, phone, created_at, updated_at FROM managers');
+    return result.rows;
+  } catch (error) {
     throw error;
   }
-
-  return data;
 };

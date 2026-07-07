@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '../config/supabaseClient.js';
+import { pool } from '../config/db.js';
 
 export const createAdmin = async (adminData) => {
   const { username, email, password } = adminData;
@@ -11,29 +11,22 @@ export const createAdmin = async (adminData) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const admin_id = uuidv4();
 
-  const { data, error } = await supabase.from('admins').insert([
-    {
-      admin_id,
-      username,
-      email,
-      password: passwordHash,
-    },
-  ]).select();
-
-  if (error) {
+  try {
+    const result = await pool.query(
+      'INSERT INTO admins (admin_id, username, email, password) VALUES ($1, $2, $3, $4) RETURNING *',
+      [admin_id, username, email, passwordHash]
+    );
+    return result.rows[0];
+  } catch (error) {
     throw error;
   }
-  return data[0];
 };
 
 export const adminLogin = async (username, password) => {
-  const { data, error } = await supabase
-    .from('admins')
-    .select('*')
-    .eq('username', username)
-    .single();
+  const result = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
+  const data = result.rows[0];
 
-  if (error || !data) {
+  if (!data) {
     throw new Error('Invalid username or password');
   }
 
@@ -42,7 +35,7 @@ export const adminLogin = async (username, password) => {
     throw new Error('Invalid username or password');
   }
 
-  return data; // return admin record for token generation
+  return data;
 };
 
 export const guestAdminLogin = async () => {
@@ -52,44 +45,49 @@ export const guestAdminLogin = async () => {
     throw new Error('Guest admin login is not configured');
   }
 
-  const { data, error } = await supabase
-    .from('admins')
-    .select('*')
-    .eq('username', guestUsername)
-    .single();
+  const result = await pool.query('SELECT * FROM admins WHERE username = $1', [guestUsername]);
+  const data = result.rows[0];
 
-  if (error || !data) {
+  if (!data) {
     throw new Error('Guest admin user not found');
   }
 
   return { ...data, isGuest: true };
 };
 
-
-
 export const updateAdmin = async (admin_id, updateData) => {
-  const updates = {};
+  const updates = [];
+  const values = [];
+  let index = 1;
 
-  if (updateData.email) updates.email = updateData.email;
-  if (updateData.username) updates.username = updateData.username;
+  if (updateData.email) {
+    updates.push(`email = $${index++}`);
+    values.push(updateData.email);
+  }
+  if (updateData.username) {
+    updates.push(`username = $${index++}`);
+    values.push(updateData.username);
+  }
   if (updateData.password) {
-    updates.password = await bcrypt.hash(updateData.password, 10);
+    const hash = await bcrypt.hash(updateData.password, 10);
+    updates.push(`password = $${index++}`);
+    values.push(hash);
   }
 
-  if (Object.keys(updates).length === 0) {
+  if (updates.length === 0) {
     throw new Error('No fields to update');
   }
 
-  const { data, error } = await supabase
-    .from('admins')
-    .update(updates)
-    .eq('admin_id', admin_id)
-    .select()
-    .single();
+  values.push(admin_id);
+  const query = `UPDATE admins SET ${updates.join(', ')} WHERE admin_id = $${index} RETURNING *`;
 
-  if (error) {
+  try {
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) {
+      throw new Error('Admin not found');
+    }
+    return result.rows[0];
+  } catch (error) {
     throw error;
   }
-
-  return data;
 };

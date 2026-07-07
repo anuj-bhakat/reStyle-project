@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabaseClient.js';
+import { pool } from '../config/db.js';
 import { updateAddress } from '../services/authService.js';
 import { updateProfile } from '../services/authService.js';
 import { changePassword } from '../services/authService.js';
@@ -7,23 +7,21 @@ export const profileController = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, email, gender, phone, address')
-      .eq('id', userId)
-      .single();
+    const result = await pool.query(
+      'SELECT id, first_name, last_name, email, gender, phone, address FROM profiles WHERE id = $1',
+      [userId]
+    );
 
-    if (error || !data) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user: data });
+    res.json({ user: result.rows[0] });
   } catch (err) {
     console.error('Profile fetch error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 
 export const updateAddressController = async (req, res) => {
   try {
@@ -38,12 +36,10 @@ export const updateAddressController = async (req, res) => {
   }
 };
 
-
 export const updateProfileController = async (req, res) => {
   try {
     const userId = req.params.id;
 
-    // Authorization check
     if (req.user.userId !== userId) {
       return res.status(403).json({ error: 'Unauthorized to update this profile' });
     }
@@ -58,12 +54,10 @@ export const updateProfileController = async (req, res) => {
   }
 };
 
-
 export const changePasswordController = async (req, res) => {
   try {
     const userId = req.params.id;
 
-    // Authorization: ensure user can only change own password
     if (req.user.userId !== userId) {
       return res.status(403).json({ error: 'Unauthorized to change this password' });
     }

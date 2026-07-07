@@ -1,48 +1,69 @@
-import { supabase } from '../config/supabaseClient.js';
+import { pool } from '../config/db.js';
 
 // Update order by UUID id
 export const updateCustomerOrder = async (id, updateData) => {
-  const { data, error } = await supabase
-    .from('customer_orders')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  const updates = [];
+  const values = [];
+  let index = 1;
+
+  for (const [key, value] of Object.entries(updateData)) {
+    updates.push(`${key} = $${index++}`);
+    values.push(value);
+  }
+
+  if (updates.length === 0) {
+    throw new Error('No fields to update');
+  }
+
+  values.push(id);
+  const query = `UPDATE customer_orders SET ${updates.join(', ')} WHERE id = $${index} RETURNING *`;
+
+  try {
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) {
+      throw new Error('Order not found');
+    }
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Delete order by UUID id
 export const deleteCustomerOrder = async (id) => {
-  const { error } = await supabase
-    .from('customer_orders')
-    .delete()
-    .eq('id', id);
-  if (error) throw error;
-  return true;
+  try {
+    const result = await pool.query('DELETE FROM customer_orders WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
+      throw new Error('Order not found');
+    }
+    return true;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Fetch order by UUID id
 export const fetchOrderById = async (id) => {
-  const { data, error } = await supabase
-    .from('customer_orders')
-    .select('*')
-    .eq('id', id)
-    .single();
-  if (error) throw error;
-  return data;
+  try {
+    const result = await pool.query('SELECT * FROM customer_orders WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      throw new Error('Order not found');
+    }
+    return result.rows[0];
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Fetch orders by customer_id
 export const fetchOrdersByCustomerId = async (customer_id) => {
-  const { data, error } = await supabase
-    .from('customer_orders')
-    .select('*')
-    .eq('customer_id', customer_id);
-  if (error) throw error;
-  return data;
+  try {
+    const result = await pool.query('SELECT * FROM customer_orders WHERE customer_id = $1', [customer_id]);
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
 };
-
 
 const generateOrderId = () => {
   const now = new Date();
@@ -59,34 +80,37 @@ const generateOrderId = () => {
 
 // Create an order and mark its products as sold
 export const createCustomerOrderAndMarkSold = async (orderData) => {
-  // generate order_id here
   orderData.order_id = generateOrderId();
+  
+  // orderData may contain fields like customer_id, products, total_price, status, payment_status, deliveryagent_id, other_charges
+  const keys = Object.keys(orderData);
+  const values = Object.values(orderData);
+  const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
 
-  // 1. Create the order
-  const { data: newOrder, error: orderError } = await supabase
-    .from('customer_orders')
-    .insert([orderData])
-    .select()
-    .single();
-  if (orderError) throw orderError;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
 
-  // 2. Mark all products as 'sold'
-  const productIds = Object.keys(orderData.products);
-  if (productIds.length > 0) {
-    const { error: updateError } = await supabase
-      .from('product_listings')
-      .update({ status: 'sold' })
-      .in('listing_id', productIds);
+    const insertQuery = `INSERT INTO customer_orders (${keys.join(', ')}) VALUES (${placeholders}) RETURNING *`;
+    const result = await client.query(insertQuery, values);
+    const newOrder = result.rows[0];
 
-    if (updateError) {
-      // handle error if needed, or even rollback the previous insertion (advanced, not shown)
-      console.error('Error updating product status:', updateError.message);
+    const productIds = Object.keys(orderData.products || {});
+    if (productIds.length > 0) {
+      const updatePlaceholders = productIds.map((_, i) => `$${i + 1}`).join(', ');
+      const updateQuery = `UPDATE product_listings SET status = 'sold' WHERE listing_id IN (${updatePlaceholders})`;
+      await client.query(updateQuery, productIds);
     }
+
+    await client.query('COMMIT');
+    return newOrder;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
   }
-
-  return newOrder;
 };
-
 
 export const fetchOrdersByStatus = async (status) => {
   const allowedStatuses = ['ordered', 'delivering', 'delivered', 'cancelled'];
@@ -94,22 +118,19 @@ export const fetchOrdersByStatus = async (status) => {
     throw new Error('Invalid status value');
   }
 
-  const { data, error } = await supabase
-    .from('customer_orders')
-    .select('*')
-    .eq('status', status);
-
-  if (error) throw error;
-  return data;
+  try {
+    const result = await pool.query('SELECT * FROM customer_orders WHERE status = $1', [status]);
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
 };
 
-
 export const fetchOrdersByDeliveryAgentId = async (deliveryagent_id) => {
-  const { data, error } = await supabase
-    .from('customer_orders')
-    .select('*')
-    .eq('deliveryagent_id', deliveryagent_id);
-
-  if (error) throw error;
-  return data;
+  try {
+    const result = await pool.query('SELECT * FROM customer_orders WHERE deliveryagent_id = $1', [deliveryagent_id]);
+    return result.rows;
+  } catch (error) {
+    throw error;
+  }
 };

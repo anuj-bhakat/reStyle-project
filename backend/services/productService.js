@@ -1,175 +1,174 @@
-import { supabase } from '../config/supabaseClient.js';
+import { pool } from '../config/db.js';
+
+const buildProductsWithImages = (products, images) => {
+  const imagesByListingId = {};
+  for (const img of images) {
+    if (!imagesByListingId[img.listing_id]) {
+      imagesByListingId[img.listing_id] = [];
+    }
+    imagesByListingId[img.listing_id].push(img);
+  }
+
+  return products.map(prod => ({
+    ...prod,
+    product_images: imagesByListingId[prod.listing_id] || []
+  }));
+};
 
 export const fetchAllProductsWithImages = async () => {
-  const { data, error } = await supabase
-    .from('product_listings')
-    .select(`
-      *,
-      product_images (
-        image_id,
-        url,
-        is_primary,
-        created_at
-      )
-    `)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
+  try {
+    const productsResult = await pool.query('SELECT * FROM product_listings ORDER BY created_at DESC');
+    const imagesResult = await pool.query('SELECT image_id, listing_id, url, is_primary, created_at FROM product_images');
+    return buildProductsWithImages(productsResult.rows, imagesResult.rows);
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const fetchProductsBySellerIdWithImages = async (seller_id) => {
-  const { data, error } = await supabase
-    .from('product_listings')
-    .select(`
-      *,
-      product_images (
-        image_id,
-        url,
-        is_primary,
-        created_at
-      )
-    `)
-    .eq('seller_id', seller_id);
-
-  if (error) throw error;
-
-  return data;
-};
-
-
-export const addProductWithImages = async (productData, images) => {
-  const { data, error } = await supabase
-    .from('product_listings')
-    .insert([productData])
-    .select()
-    .single();
-
-  if (error) throw error;
-
-  const listing_id = data.listing_id;
-
-  const imagesToInsert = images.map(img => ({
-    listing_id,
-    url: img.url,
-    is_primary: img.is_primary,
-  }));
-
-  const { data: imagesData, error: imagesError } = await supabase
-    .from('product_images')
-    .insert(imagesToInsert)
-    .select();
-
-  if (imagesError) throw imagesError;
-
-  return { product: data, images: imagesData };
-};
-
-
-
-
-export const updateProductWithImages = async (listing_id, productData, images) => {
-  // productData: fields to update in product_listings (excluding listing_id)
-  // images: array of objects each having { image_id?, url, is_primary }
-
-  // 1. Update product listing fields
-  const { data: updatedProduct, error: productError } = await supabase
-    .from('product_listings')
-    .update(productData)
-    .eq('listing_id', listing_id)
-    .select()
-    .single();
-
-  if (productError) {
-    throw productError;
-  }
-
-  // 2. If images provided, replace all images for this listing
-  if (Array.isArray(images)) {
-    // Delete existing images for this listing
-    const { error: deleteError } = await supabase
-      .from('product_images')
-      .delete()
-      .eq('listing_id', listing_id);
-
-    if (deleteError) {
-      throw deleteError;
+  try {
+    const productsResult = await pool.query('SELECT * FROM product_listings WHERE seller_id = $1', [seller_id]);
+    const listingIds = productsResult.rows.map(p => p.listing_id);
+    let images = [];
+    if (listingIds.length > 0) {
+      const placeholders = listingIds.map((_, i) => `$${i + 1}`).join(', ');
+      const imagesResult = await pool.query(`SELECT image_id, listing_id, url, is_primary, created_at FROM product_images WHERE listing_id IN (${placeholders})`, listingIds);
+      images = imagesResult.rows;
     }
-
-    // Prepare new images with listing_id
-    const newImages = images.map(img => ({
-      listing_id,
-      url: img.url,
-      is_primary: img.is_primary || false,
-    }));
-
-    // Insert new images
-    const { data: insertedImages, error: imagesError } = await supabase
-      .from('product_images')
-      .insert(newImages)
-      .select();
-
-    if (imagesError) {
-      throw imagesError;
-    }
-
-    return {
-      product: updatedProduct,
-      images: insertedImages,
-    };
-  }
-
-  // If no images update, just return the updated product
-  return { product: updatedProduct };
-};
-
-
-
-export const fetchProductById = async (listing_id) => {
-  const { data, error } = await supabase
-    .from('product_listings')
-    .select(`
-      *,
-      product_images (
-        image_id,
-        url,
-        is_primary,
-        created_at
-      )
-    `)
-    .eq('listing_id', listing_id)
-    .single();
-
-  if (error) {
+    return buildProductsWithImages(productsResult.rows, images);
+  } catch (error) {
     throw error;
   }
+};
 
-  return data;
+export const addProductWithImages = async (productData, images) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    const keys = Object.keys(productData);
+    const values = Object.values(productData);
+    const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
+
+    const insertQuery = `INSERT INTO product_listings (${keys.join(', ')}) VALUES (${placeholders}) RETURNING *`;
+    const result = await client.query(insertQuery, values);
+    const product = result.rows[0];
+    const listing_id = product.listing_id;
+
+    let imagesData = [];
+    if (images && images.length > 0) {
+      const imgValues = [];
+      const imgPlaceholders = images.map((img, index) => {
+        const offset = index * 3;
+        imgValues.push(listing_id, img.url, img.is_primary || false);
+        return `($${offset + 1}, $${offset + 2}, $${offset + 3})`;
+      }).join(', ');
+      
+      const imgQuery = `INSERT INTO product_images (listing_id, url, is_primary) VALUES ${imgPlaceholders} RETURNING *`;
+      const imgResult = await client.query(imgQuery, imgValues);
+      imagesData = imgResult.rows;
+    }
+
+    await client.query('COMMIT');
+    return { product, images: imagesData };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const updateProductWithImages = async (listing_id, productData, images) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const updates = [];
+    const values = [];
+    let index = 1;
+
+    for (const [key, value] of Object.entries(productData)) {
+      updates.push(`${key} = $${index++}`);
+      values.push(value);
+    }
+
+    let updatedProduct;
+    if (updates.length > 0) {
+      values.push(listing_id);
+      const query = `UPDATE product_listings SET ${updates.join(', ')} WHERE listing_id = $${index} RETURNING *`;
+      const result = await client.query(query, values);
+      if (result.rows.length === 0) {
+        throw new Error('Product not found for update');
+      }
+      updatedProduct = result.rows[0];
+    } else {
+      const result = await client.query('SELECT * FROM product_listings WHERE listing_id = $1', [listing_id]);
+      updatedProduct = result.rows[0];
+    }
+
+    let insertedImages = [];
+    if (Array.isArray(images)) {
+      await client.query('DELETE FROM product_images WHERE listing_id = $1', [listing_id]);
+
+      if (images.length > 0) {
+        const imgValues = [];
+        const imgPlaceholders = images.map((img, i) => {
+          const offset = i * 3;
+          imgValues.push(listing_id, img.url, img.is_primary || false);
+          return `($${offset + 1}, $${offset + 2}, $${offset + 3})`;
+        }).join(', ');
+        
+        const imgQuery = `INSERT INTO product_images (listing_id, url, is_primary) VALUES ${imgPlaceholders} RETURNING *`;
+        const imgResult = await client.query(imgQuery, imgValues);
+        insertedImages = imgResult.rows;
+      }
+      
+      await client.query('COMMIT');
+      return { product: updatedProduct, images: insertedImages };
+    }
+
+    await client.query('COMMIT');
+    return { product: updatedProduct };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
+export const fetchProductById = async (listing_id) => {
+  try {
+    const productsResult = await pool.query('SELECT * FROM product_listings WHERE listing_id = $1', [listing_id]);
+    if (productsResult.rows.length === 0) {
+      throw new Error('Product not found');
+    }
+    const imagesResult = await pool.query('SELECT image_id, listing_id, url, is_primary, created_at FROM product_images WHERE listing_id = $1', [listing_id]);
+    
+    const product = productsResult.rows[0];
+    product.product_images = imagesResult.rows;
+    return product;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const fetchProductsByStatus = async (status) => {
-  const { data, error } = await supabase
-    .from('product_listings')
-    .select(`
-      *,
-      product_images (
-        image_id,
-        url,
-        is_primary,
-        created_at
-      )
-    `)
-    .eq('status', status)
-    .order('created_at', { ascending: false });
-
-  if (error) {
+  try {
+    const productsResult = await pool.query('SELECT * FROM product_listings WHERE status = $1 ORDER BY created_at DESC', [status]);
+    const listingIds = productsResult.rows.map(p => p.listing_id);
+    let images = [];
+    if (listingIds.length > 0) {
+      const placeholders = listingIds.map((_, i) => `$${i + 1}`).join(', ');
+      const imagesResult = await pool.query(`SELECT image_id, listing_id, url, is_primary, created_at FROM product_images WHERE listing_id IN (${placeholders})`, listingIds);
+      images = imagesResult.rows;
+    }
+    return buildProductsWithImages(productsResult.rows, images);
+  } catch (error) {
     throw error;
   }
-
-  return data;
 };
-
-
 
 function countTrueKeys(conditionsJson) {
   if (!conditionsJson || typeof conditionsJson !== 'object') return 0;
@@ -189,7 +188,6 @@ function calculateBasePrice(algorithmPrice, trueCount, totalCount) {
 
   if (!isFinite(start) || !isFinite(end)) throw new Error('Invalid start or end price');
 
-  // totalCount logic
   if (totalCount === 1) {
     if (trueCount === 1) return end;
     return 0;
@@ -199,71 +197,54 @@ function calculateBasePrice(algorithmPrice, trueCount, totalCount) {
     if (trueCount === 0) return 0;
     return start + (trueCount-1) * price_per_check;
   }
-  // Fallback if conditions_json is empty
   return 0;
 }
 
 export const fetchAndUpdateBasePriceForPickupRequest = async (pickup_request_id) => {
-  // Fetch data from pickup_requests
-  const { data: pickup, error: errPickup } = await supabase
-    .from('pickup_requests')
-    .select('listing_id, conditions_json')
-    .eq('pickup_request_id', pickup_request_id)
-    .single();
-  if (errPickup || !pickup) throw new Error('Pickup request not found');
+  try {
+    const pickupResult = await pool.query('SELECT listing_id, conditions_json FROM pickup_requests WHERE pickup_request_id = $1', [pickup_request_id]);
+    const pickup = pickupResult.rows[0];
+    if (!pickup) throw new Error('Pickup request not found');
 
-  // Fetch algorithm_price from product_listings
-  const { data: listing, error: errListing } = await supabase
-    .from('product_listings')
-    .select('algorithm_price')
-    .eq('listing_id', pickup.listing_id)
-    .single();
-  if (errListing || !listing) throw new Error('Listing not found');
+    const listingResult = await pool.query('SELECT algorithm_price FROM product_listings WHERE listing_id = $1', [pickup.listing_id]);
+    const listing = listingResult.rows[0];
+    if (!listing) throw new Error('Listing not found');
 
-  // Count trues and total
-  const trueCount = countTrueKeys(pickup.conditions_json);
-  const totalCount = countAllKeys(pickup.conditions_json);
+    const trueCount = countTrueKeys(pickup.conditions_json);
+    const totalCount = countAllKeys(pickup.conditions_json);
+    const base_price = calculateBasePrice(listing.algorithm_price, trueCount, totalCount);
 
-  // Calculate
-  const base_price = calculateBasePrice(listing.algorithm_price, trueCount, totalCount);
+    await pool.query('UPDATE product_listings SET base_price = $1 WHERE listing_id = $2', [base_price, pickup.listing_id]);
 
-  // Update base_price in product_listings
-  const { error: updateError } = await supabase
-    .from('product_listings')
-    .update({ base_price })
-    .eq('listing_id', pickup.listing_id);
-
-  if (updateError) throw updateError;
-
-  return {
-    listing_id: pickup.listing_id,
-    conditions_json: pickup.conditions_json,
-    algorithm_price: listing.algorithm_price,
-    true_conditions_count: trueCount,
-    total_conditions_count: totalCount,
-    base_price,
-  };
+    return {
+      listing_id: pickup.listing_id,
+      conditions_json: pickup.conditions_json,
+      algorithm_price: listing.algorithm_price,
+      true_conditions_count: trueCount,
+      total_conditions_count: totalCount,
+      base_price,
+    };
+  } catch (error) {
+    throw error;
+  }
 };
-
 
 export const fetchProductsWithImagesByListingIds = async (listingIds) => {
   if (!Array.isArray(listingIds) || listingIds.length === 0) {
     throw new Error('listingIds must be a non-empty array');
   }
 
-  const { data, error } = await supabase
-    .from('product_listings')
-    .select(`
-      *,
-      product_images (
-        image_id,
-        url,
-        is_primary,
-        created_at
-      )
-    `)
-    .in('listing_id', listingIds);
-
-  if (error) throw error;
-  return data;
+  try {
+    const placeholders = listingIds.map((_, i) => `$${i + 1}`).join(', ');
+    const productsResult = await pool.query(`SELECT * FROM product_listings WHERE listing_id IN (${placeholders})`, listingIds);
+    
+    let images = [];
+    if (productsResult.rows.length > 0) {
+      const imagesResult = await pool.query(`SELECT image_id, listing_id, url, is_primary, created_at FROM product_images WHERE listing_id IN (${placeholders})`, listingIds);
+      images = imagesResult.rows;
+    }
+    return buildProductsWithImages(productsResult.rows, images);
+  } catch (error) {
+    throw error;
+  }
 };
